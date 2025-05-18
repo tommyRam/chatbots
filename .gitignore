@@ -1,0 +1,56 @@
+# --- Global ---
+.DS_Store
+Thumbs.db
+.env
+.env.*
+*.env.*
+*.log
+
+# --- Node.js / Next.js (Frontend) ---
+/frontend/node_modules
+/frontend/.next
+/frontend/.turbo
+/frontend/.vercel
+/frontend/.env.local
+/frontend/.env.production.local
+/frontend/.env.development.local
+/frontend/package-lock.json
+/frontend/yarn.lock
+/frontend/pnpm-lock.yaml
+
+# Optional: if using Tailwind JIT cache
+/frontend/.tailwindcache
+
+# --- Python / FastAPI (Backend) ---
+/backend/__pycache__/
+/backend/*.py[cod]
+/backend/.mypy_cache/
+/backend/.pytest_cache/
+/backend/.venv
+/backend/venv
+/backend/env
+/backend/.env
+/backend/.env.*
+
+# Pydantic compiled cache
+/backend/.pydantic/
+
+# Poetry (if used)
+/backend/poetry.lock
+
+# PyInstaller
+/backend/dist/
+/backend/build/
+/backend/*.spec
+
+# SQLite (if used)
+/backend/*.db
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.iml
+
+# --- OS files ---
+ehthumbs.db
+Icon?
