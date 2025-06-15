@@ -5,6 +5,9 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+doc_path = os.path.join(current_dir,"..", "dev_data_api", "Be_Good.pdf")
+
 # For the moment just use local data but after the data is loaded by the users
 def load_data(doc_path):
     try: 
@@ -14,6 +17,7 @@ def load_data(doc_path):
     except FileNotFoundError as e: 
         raise FileNotFoundError(f"File not found for docpath: {doc_path} - error: {e}")
     except: 
+        print("Error from loading data")
         raise
 
 def make_splitter(chunk_size, chunk_overlap):
@@ -24,7 +28,7 @@ def make_splitter(chunk_size, chunk_overlap):
     return text_splitter
 
 # For now we use Chroma but after we will use more powerful vectorestore
-def create_retriever(doc_path, embedding, k = 1):
+def create_retriever(embedding, doc_path = doc_path, k = 1):
     """
         Create a retriever for the giving doc_path and store in Chroma db
     """
@@ -41,4 +45,5 @@ def create_retriever(doc_path, embedding, k = 1):
     except FileNotFoundError as file_not_found_error:
         raise FileNotFoundError(file_not_found_error)
     except:
+        print("Error from creating retriever")
         raise
