@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from .schemas import ChatResponse, UserRequest
-from .services import simple_RAG, multi_query_RAG, fusion_RAG
+from .services import simple_RAG, multi_query_RAG, fusion_RAG, decomposition_RAG
 
 router = APIRouter()
 
@@ -33,6 +33,17 @@ async def fusion_rag(request: UserRequest):
         return response
     except Exception as e:
         raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail= f"An error from server: {e}"
+        )
+
+@router.post("/api/RAG/decompositionRAG", response_model=ChatResponse)
+async def decomposition_rag(request: UserRequest):
+    try:
+        response = await decomposition_RAG(request.query)
+        return response
+    except Exception as e:
+         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail= f"An error from server: {e}"
         )
