@@ -30,3 +30,9 @@ def reciprocal_rank_fusion(results: list[list], k=60):
     ]
 
     return reranked_results
+
+def format_qa_pair(question, answer):
+    """Format Q and A pair"""
+    formatted_string = ""
+    formatted_string += f"Question: {question}\nAnswer: {answer}\n\n"
+    return formatted_string.strip()

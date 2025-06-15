@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv, find_dotenv
+from operator import itemgetter
 
 from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
@@ -8,7 +9,7 @@ from langchain.prompts import ChatPromptTemplate
 
 from config import settings
 from .utils.rag import create_retriever
-from .utils.formatters import format_docs, format_docs_list, get_unique_union, reciprocal_rank_fusion
+from .utils.formatters import format_docs, format_docs_list, get_unique_union, reciprocal_rank_fusion, format_qa_pair
 from .schemas import ChatResponse
 from .utils.prompts import prompts
 
@@ -109,6 +110,56 @@ async def fusion_RAG(question):
     except Exception as e:
         print(f"An error was occured: {e}")
         raise
+
+async def decomposition_RAG(question): 
+    try:
+        generate_queries_for_prompt_decomposition_template = prompts["generate_queries_for_decomposition_rag_template"]
+        generate_queries_for_prompt_decomposition = ChatPromptTemplate.from_template(generate_queries_for_prompt_decomposition_template)
+
+        generate_queries_decomposition_chain = (
+            generate_queries_for_prompt_decomposition 
+            | llm
+            | StrOutputParser()
+            | (lambda x: x.split("\n"))
+        )
+
+        generated_questions = generate_queries_decomposition_chain.invoke({"question": question})
+        generated_questions = generated_questions[2:]
+
+        decomposition_prompt = ChatPromptTemplate.from_template(prompts["decomposition_rag_template"])
+
+        retriever = create_retriever(embedding=embedding)
+
+        q_a_pairs = ""
+        documents_used = []
+
+        for q in generated_questions:
+            relevant_docs = retriever.invoke(input=q)
+            relevant_docs_contents = format_docs_list(relevant_docs)
+            formatted_relevant_docs_into_one_long_string = format_docs(relevant_docs)   
+
+            documents_used += relevant_docs_contents
+
+            rag_chain = (
+                {"context": itemgetter("context"),
+                 "question": itemgetter("question"),
+                 "q_a_pairs": itemgetter("q_a_pairs")}
+                | decomposition_prompt
+                | llm 
+                | StrOutputParser()
+            )
+
+            answer = rag_chain.invoke({"context": formatted_relevant_docs_into_one_long_string,"question": q, "q_a_pairs": q_a_pairs})
+            q_a_pair = format_qa_pair(q, answer)
+            q_a_pairs = q_a_pairs + "\n ---- \n" + q_a_pair
+        
+        response = ChatResponse(documents=documents_used, chat_response=answer)
+        return response
+    except Exception as e:
+        print(f"An error was occured: {e}")
+        raise
+
+
 
 
         
