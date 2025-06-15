@@ -1,0 +1,38 @@
+import os
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import Chroma
+
+# For the moment just use local data but after the data is loaded by the users
+def load_data(doc_path):
+    try: 
+        loader = PyPDFLoader(doc_path)
+        docs= loader.load()
+        return docs
+    except: 
+        return "Impossible to load the document"
+
+def make_splitter(chunk_size, chunk_overlap):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap
+    )
+    return text_splitter
+
+# For now we use Chroma but after we will use more powerful vectorestore
+def create_retriever(doc_path, embedding, k = 1):
+    """
+        Create a retriever for the giving doc_path and store in Chroma db
+    """
+
+    docs = load_data(doc_path=doc_path)
+    splitter = make_splitter(chunk_size=1000, chunk_overlap=200)
+    docs_splits = splitter.split_documents(docs)
+    vectorestore = Chroma.from_documents(
+        documents=docs_splits, 
+        embedding=embedding
+    )
+    retriever = vectorestore.as_retriever(search_kwargs={"k": k})
+    return retriever

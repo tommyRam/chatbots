@@ -54,3 +54,5 @@ Thumbs.db
 # --- OS files ---
 ehthumbs.db
 Icon?
+
+__pycache__
