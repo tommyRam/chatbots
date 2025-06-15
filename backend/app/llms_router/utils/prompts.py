@@ -11,7 +11,7 @@ prompts = {
             some of the limitations of the distance-based similarity search. Provide these alternative questions
             separated by newlines. Original question: {question}
             """,
-    "fusion_query_rag_template": """You are a helpful assistant that generates multiple search queries based on
+    "fusion_rag_template": """You are a helpful assistant that generates multiple search queries based on
         single input query.\nGenerate multiple search queries related to: {question}\n Output 
         (4 queries):"""
 }
