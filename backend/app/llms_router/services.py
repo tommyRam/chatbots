@@ -24,20 +24,25 @@ embedding = GoogleGenerativeAIEmbeddings(model=settings.google_embedding_model)
 llm = ChatGoogleGenerativeAI(model=settings.google_gemini_model)
 
 async def simple_RAG(question):
-    prompt = hub.pull("rlm/rag-prompt")
-    retriever = create_retriever(doc_path=doc_path, embedding=embedding)
+    try: 
+        prompt = hub.pull("rlm/rag-prompt")
+        retriever = create_retriever(doc_path=doc_path, embedding=embedding)
 
-    relevant_docs = retriever.invoke(input=question)
-    relevant_docs_contents = format_docs_list(relevant_docs)
-    formatted_relevant_docs = format_docs(relevant_docs)    
+        relevant_docs = retriever.invoke(input=question)
+        relevant_docs_contents = format_docs_list(relevant_docs)
+        formatted_relevant_docs = format_docs(relevant_docs)    
 
-    rag_chain = (
-        prompt | llm | StrOutputParser()
-    )
+        rag_chain = (
+            prompt | llm | StrOutputParser()
+        )
 
-    chat_response = rag_chain.invoke(
-        {"context": formatted_relevant_docs, "question": question}
-    )
+        chat_response = rag_chain.invoke(
+            {"context": formatted_relevant_docs, "question": question}
+        )
 
-    response = ChatResponse(documents=relevant_docs_contents, chat_response=chat_response)
-    return response 
+        response = ChatResponse(documents=relevant_docs_contents, chat_response=chat_response)
+        return response 
+    except FileNotFoundError as e:
+        raise FileNotFoundError(e)
+    except:
+        raise

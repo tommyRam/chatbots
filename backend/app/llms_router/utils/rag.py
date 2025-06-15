@@ -11,8 +11,10 @@ def load_data(doc_path):
         loader = PyPDFLoader(doc_path)
         docs= loader.load()
         return docs
+    except FileNotFoundError as e: 
+        raise FileNotFoundError(f"File not found for docpath: {doc_path} - error: {e}")
     except: 
-        return "Impossible to load the document"
+        raise
 
 def make_splitter(chunk_size, chunk_overlap):
     text_splitter = RecursiveCharacterTextSplitter(
@@ -26,13 +28,17 @@ def create_retriever(doc_path, embedding, k = 1):
     """
         Create a retriever for the giving doc_path and store in Chroma db
     """
-
-    docs = load_data(doc_path=doc_path)
-    splitter = make_splitter(chunk_size=1000, chunk_overlap=200)
-    docs_splits = splitter.split_documents(docs)
-    vectorestore = Chroma.from_documents(
-        documents=docs_splits, 
-        embedding=embedding
-    )
-    retriever = vectorestore.as_retriever(search_kwargs={"k": k})
-    return retriever
+    try:
+        docs = load_data(doc_path=doc_path)
+        splitter = make_splitter(chunk_size=1000, chunk_overlap=200)
+        docs_splits = splitter.split_documents(docs)
+        vectorestore = Chroma.from_documents(
+            documents=docs_splits, 
+            embedding=embedding
+        )
+        retriever = vectorestore.as_retriever(search_kwargs={"k": k})
+        return retriever
+    except FileNotFoundError as file_not_found_error:
+        raise FileNotFoundError(file_not_found_error)
+    except:
+        raise
