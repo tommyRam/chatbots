@@ -1,11 +1,18 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from .schemas import ChatResponse, UserRequest
 from .services import simple_RAG, multi_query_RAG, fusion_RAG, decomposition_RAG
+from router.schemas import LoginUserRequest
+from router.services import current_user
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api/RAG"
+)
 
-@router.post("/api/RAG/simpleRAG", response_model=ChatResponse)
-async def simple_rag(request: UserRequest):
+@router.post("/simpleRAG", response_model=ChatResponse)
+async def simple_rag(
+    request: UserRequest,
+    user: LoginUserRequest = Depends(current_user)
+    ):
     try:
         response = await simple_RAG(request.query)
         return response
@@ -15,8 +22,11 @@ async def simple_rag(request: UserRequest):
             detail= f"An error from server: {e}"
         )
     
-@router.post("/api/RAG/multiQueryRAG", response_model=ChatResponse)
-async def multi_query_rag(request: UserRequest):
+@router.post("/multiQueryRAG", response_model=ChatResponse)
+async def multi_query_rag(
+    request: UserRequest,
+    user: LoginUserRequest = Depends(current_user)
+    ):
     try: 
         response = await multi_query_RAG(request.query)
         return response
@@ -26,8 +36,11 @@ async def multi_query_rag(request: UserRequest):
             detail= f"An error from server: {e}"
         )
 
-@router.post("/api/RAG/fusionRAG", response_model=ChatResponse)
-async def fusion_rag(request: UserRequest):
+@router.post("/fusionRAG", response_model=ChatResponse)
+async def fusion_rag(
+    request: UserRequest,
+    user: LoginUserRequest = Depends(current_user)
+    ):
     try: 
         response = await fusion_RAG(request.query)
         return response
@@ -37,8 +50,11 @@ async def fusion_rag(request: UserRequest):
             detail= f"An error from server: {e}"
         )
 
-@router.post("/api/RAG/decompositionRAG", response_model=ChatResponse)
-async def decomposition_rag(request: UserRequest):
+@router.post("/decompositionRAG", response_model=ChatResponse)
+async def decomposition_rag(
+    request: UserRequest,
+    user: LoginUserRequest = Depends(current_user)
+    ):
     try:
         response = await decomposition_RAG(request.query)
         return response
