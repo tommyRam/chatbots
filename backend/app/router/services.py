@@ -4,6 +4,8 @@ from passlib.context import CryptContext
 from typing import Optional
 from datetime import datetime, timedelta
 import secrets
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status
 
 from database import SessionLocal, Base, engine
 from .schemas import RegisterUserRequest, UserResponse, TokenResponse
@@ -12,6 +14,7 @@ from .crud import add_user, add_refresh_token, get_refresh_token_by_token, get_u
 from config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2schema = OAuth2PasswordBearer("api/app/auth/login")
 
 def create_db():
     Base.metadata.create_all(bind=engine)
@@ -61,7 +64,7 @@ async def create_refresh_token(user_id: str, db: orm.Session) -> str:
     old_token = await get_active_refresh_token_from_user_id(user_id=user_id, db=db)
 
     if old_token:
-        revoke_refresh_token(old_token.token, db)
+        await revoke_refresh_token(old_token.token, db)
 
     token = secrets.token_urlsafe(32)
     expires_at = datetime.now() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
@@ -111,6 +114,21 @@ async def is_user_exist(unique_user_id: str, db: orm.Session) -> bool:
         return True
     
     return False
+
+async def current_user(token: str = Depends(oauth2schema), db: orm.Session = Depends(get_db)):
+    try:
+        #access_token = tokenResponse.access_token
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.ALGORITHM])
+        user = await get_user_by_email(payload['email'], db)
+    except Exception as e:
+        print("Exception", e)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Wrong credentials!"
+        )
+    
+    return UserResponse.model_validate(user)
+
 
 
 

@@ -58,9 +58,9 @@ class LoginUserRequest(BaseModel):
     
 class UserResponse(UserBase):
     id: str
-    firstname: str = None
-    lastname: str = None
-    phone: str = None
+    firstname: Optional[str] = None 
+    lastname: Optional[str] = None
+    phone: Optional[str] = None
 
     class Config: 
         from_attributes = True
