@@ -117,15 +117,16 @@ async def is_user_exist(unique_user_id: str, db: orm.Session) -> bool:
 
 async def current_user(token: str = Depends(oauth2schema), db: orm.Session = Depends(get_db)):
     try:
-        #access_token = tokenResponse.access_token
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.ALGORITHM])
+        payload = await verify_access_token(token)
         user = await get_user_by_email(payload['email'], db)
-    except Exception as e:
-        print("Exception", e)
-        raise HTTPException(
+
+        if not user: 
+            raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Wrong credentials!"
         )
+    except Exception as e:
+        raise
     
     return UserResponse.model_validate(user)
 
