@@ -1,6 +1,7 @@
 from pydantic import BaseModel, field_validator
-import datetime
+from datetime import datetime
 import re
+from typing import Optional
 
 class UserBase(BaseModel):
     email: str
@@ -21,6 +22,17 @@ class UserBase(BaseModel):
         if value[0] == '_':
             raise ValueError("Username must begin with character")
         return value
+    
+class UserSchema(UserBase):
+    id: str
+    hashed_password: str
+    firstname: Optional[str] = None 
+    lastname: Optional[str] = None
+    phone: Optional[str] = None
+    created_at: datetime
+
+    class Config: 
+        from_attributes = True
 
 class RegisterUserRequest(UserBase):
     password: str
@@ -35,6 +47,13 @@ class RegisterUserRequest(UserBase):
         return value
     
     class Config: 
+        from_attributes = True
+
+class LoginUserRequest(BaseModel):
+    unique_user_id: str
+    password: str
+
+    class Config:
         from_attributes = True
     
 class UserResponse(UserBase):
