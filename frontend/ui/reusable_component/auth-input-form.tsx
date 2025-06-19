@@ -15,7 +15,7 @@ export default function AuthInputForm({
             <input 
                 type={type}
                 placeholder={placeholder}
-                className="border-gray-500 border-2 rounded h-10 px-3 text-purple-950 placeholder:text-gray-500" 
+                className="border-gray-500 border-2 rounded h-10 px-3 text-purple-950 placeholder:text-gray-500 focus:outline-none focus:ring-0.5 focus:border-purple-900" 
             ></input>
         </div>
     )
