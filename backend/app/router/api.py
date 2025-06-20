@@ -75,6 +75,8 @@ async def login_user(
     access_token = await create_access_token(user_data)
     refresh_token = await create_refresh_token(user.id, db)
 
+    print("response: ", access_token)
+
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
