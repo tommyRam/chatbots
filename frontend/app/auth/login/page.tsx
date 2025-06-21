@@ -5,7 +5,7 @@ import AuthInputForm from "@/ui/reusable_component/auth-input-form";
 import Link from "next/link";
 import { ChangeEvent, FormEvent, startTransition, useEffect, useState, useTransition } from "react";
 import useLoginForm from "@/hooks/use-login-form";
-import { LoginResponse } from "@/types/auth";
+import { AuthResponse } from "@/types/auth";
 import { LoginFormData } from "@/types/auth";
 import { login } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
@@ -108,7 +108,13 @@ export default function Login(){
                         }
 
                         <div className="flex justify-center pt-2">
-                            <Button type="submit" buttonName="Login" actionName="Login..." style="w-full" isPending={isPending}/>
+                            <Button 
+                                type="submit" 
+                                buttonName="Login" 
+                                actionName="Login..." 
+                                style="w-full" 
+                                isPending={isPending}
+                            />
                         </div>
                     </form>
                 </div>

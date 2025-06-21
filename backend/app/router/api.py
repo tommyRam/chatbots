@@ -31,7 +31,11 @@ async def register_user(
         )
     
     user_model = await create_user(payload, db)
-    access_token = await create_access_token(dict(user_model))
+    print("================== user_model", user_model)
+    user_schema = UserSchema.model_validate(user_model)
+
+    user_data = user_schema.model_dump(mode="json")
+    access_token = await create_access_token(user_data)
     refresh_token = await create_refresh_token(user_model.id, db)
 
     return TokenResponse(

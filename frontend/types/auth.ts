@@ -13,7 +13,7 @@ export interface LoginFormTouched {
     password?: boolean;
 }
 
-export interface LoginResponse {
+export interface AuthResponse {
     access_token: string;
     refresh_token: string;
     token_type: string;

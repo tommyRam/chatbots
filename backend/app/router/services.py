@@ -34,7 +34,7 @@ def hash_password(password: str) -> str:
 
 async def create_user(user: RegisterUserRequest, db: orm.Session) -> UserModel:
     hashed_password = hash_password(user.password)
-
+    print("****************user", user)
     user_model = UserModel(
         email = user.email,
         username = user.username,
@@ -43,9 +43,9 @@ async def create_user(user: RegisterUserRequest, db: orm.Session) -> UserModel:
         hashed_password = hashed_password,
         phone = user.phone
     )
-    add_user(user_model, db)
+    await add_user(user_model, db)
     user_model_with_id = await get_user_by_email(user.email, db)
-
+    print("user_model_with_id ", user_model_with_id)
     return user_model_with_id
 
 async def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
