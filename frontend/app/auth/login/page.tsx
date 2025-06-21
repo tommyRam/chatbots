@@ -49,20 +49,12 @@ export default function Login(){
         }
     }
 
-    const handleUsernameInputField = (e: ChangeEvent<HTMLInputElement>): void => {
-        updateField("username", e.target.value);
+    const handleInputChange = (field: LoginFormField) => (e: ChangeEvent<HTMLInputElement>): void => {
+        updateField(field, e.target.value);
     }
 
-    const handlePasswordInputField = (e: ChangeEvent<HTMLInputElement>): void => {
-        updateField("password", e.target.value);
-    }
-
-    const handleUsernameBlur = (): void => {
-        makeFieldAsTouched("username");
-    }
-
-    const handlePasswordBlur = (): void => {
-        makeFieldAsTouched("password");
+    const handleInputBlur = (field: LoginFormField) => (): void => {
+        makeFieldAsTouched(field);
     }
 
     const shouldShowError = (field: LoginFormField): boolean => {
@@ -85,8 +77,8 @@ export default function Login(){
                             shouldShowError={shouldShowError("username")}
                             errorMessage={errors.username}
                             value={formData.username}
-                            onChange={handleUsernameInputField}
-                            onBlur={handleUsernameBlur}
+                            onChange={handleInputChange("username")}
+                            onBlur={handleInputBlur("username")}
                         />
                         <AuthInputForm 
                             id="password"
@@ -96,8 +88,8 @@ export default function Login(){
                             shouldShowError={shouldShowError("password")}
                             errorMessage={errors.password}
                             value={formData.password}
-                            onChange={handlePasswordInputField}
-                            onBlur={handlePasswordBlur}
+                            onChange={handleInputChange("password")}
+                            onBlur={handleInputBlur("password")}
                         />
 
                         {

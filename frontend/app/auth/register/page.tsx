@@ -51,9 +51,7 @@ export default function Register(){
     }
 
     const handleInputChange = (field: RegisterFormDataField) => (e: ChangeEvent<HTMLInputElement>): void => {
-        console.log("HandleInputChange")
         updateRegisterFormField(field, e.target.value);
-        console.log(JSON.stringify(formData));
     }
 
     const handleInputBlur = (field: RegisterFormDataField) => (): void => {
