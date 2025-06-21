@@ -47,11 +47,11 @@ export default function ResizableLayout(
 
     return (
         <div
-            className="flex-1 flex bg-gray-700"
+            className="flex-1 flex"
         >
             <div 
                 ref={containerRef}
-                className="flex-1 flex overflow-hidden bg-red-800"
+                className="flex-1 flex overflow-hidden"
             >
                 <div
                     className="border-r border-gray-300"
@@ -61,9 +61,13 @@ export default function ResizableLayout(
                     {children.leftComponent}
                 </div>
                 <div 
-                    className="w-1 bg-amber-800 hover:bg-amber-950 cursor-col-resize transition-colors"
+                    className="flex justify-center items-center w-0.5 hover:bg-purple-950 cursor-col-resize transition-colors rounded-2xl"
                     onMouseDown={handleMouseDown}
-                />
+                >
+                    <div
+                        className="w-3 h-8 bg-gray-500"
+                    ></div>
+                </div>
                 <div
                     className="flex"
                     style={{width: `${100 - leftWidth}%`}}
