@@ -8,7 +8,6 @@ export const login = async (loginFormData: LoginFormData): Promise<AuthResponse>
     formData.append("password", loginFormData.password);
     
     const LOGIN_URL = API_URL + "/api/app/auth/login";
-    console.log("urrlllll " + LOGIN_URL)
 
     try {
         const response = await fetch(
