@@ -36,9 +36,9 @@ class UserSchema(UserBase):
 
 class RegisterUserRequest(UserBase):
     password: str
-    firstname: str = None 
-    lastname: str = None
-    phone: str = None
+    firstname: Optional[str] = None 
+    lastname: Optional[str] = None
+    phone: Optional[str] = None
 
     @field_validator("password")
     def check_password(cls, value):

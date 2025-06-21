@@ -13,9 +13,40 @@ export interface LoginFormTouched {
     password?: boolean;
 }
 
-export interface LoginResponse {
+export interface AuthResponse {
     access_token: string;
     refresh_token: string;
     token_type: string;
     expire_in: number;
+}
+
+export interface RegisterFormData {
+    email: string;
+    username: string;
+    password: string;
+    confirmPassword: string;
+}
+
+export interface RegisterFormDataErrors {
+    email?: string;
+    username?: string;
+    password?: string;
+    confirmPassword?: string;
+}
+
+export interface RegisterFormDataTouched {
+    email?: string;
+    username?: string;
+    password?: string;
+    confirmPassword?: string;
+}
+
+export interface UserResponse {
+    id: string;
+    email: string;
+    username: string;
+    password: string;
+    firstname?: string;
+    lastname?: string;
+    phone?: string;
 }

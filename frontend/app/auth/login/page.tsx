@@ -5,9 +5,9 @@ import AuthInputForm from "@/ui/reusable_component/auth-input-form";
 import Link from "next/link";
 import { ChangeEvent, FormEvent, startTransition, useEffect, useState, useTransition } from "react";
 import useLoginForm from "@/hooks/use-login-form";
-import { LoginResponse } from "@/types/auth";
+import { AuthResponse } from "@/types/auth";
 import { LoginFormData } from "@/types/auth";
-import { login } from "@/api/auth-api";
+import { getCurrentUser, login } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
 
 type LoginFormField = keyof LoginFormData
@@ -38,8 +38,11 @@ export default function Login(){
             startTransition(async () => {
                 try {
                     const response = await login(formData);
+                    const userData = await getCurrentUser(response.access_token);
+
                     localStorage.setItem("access_token", response.access_token);
                     localStorage.setItem("refresh_token", response.refresh_token);
+                    localStorage.setItem("user_data", JSON.stringify(userData));
 
                     router.push("/main");
                 } catch (e: unknown){
@@ -49,20 +52,12 @@ export default function Login(){
         }
     }
 
-    const handleUsernameInputField = (e: ChangeEvent<HTMLInputElement>): void => {
-        updateField("username", e.target.value);
+    const handleInputChange = (field: LoginFormField) => (e: ChangeEvent<HTMLInputElement>): void => {
+        updateField(field, e.target.value);
     }
 
-    const handlePasswordInputField = (e: ChangeEvent<HTMLInputElement>): void => {
-        updateField("password", e.target.value);
-    }
-
-    const handleUsernameBlur = (): void => {
-        makeFieldAsTouched("username");
-    }
-
-    const handlePasswordBlur = (): void => {
-        makeFieldAsTouched("password");
+    const handleInputBlur = (field: LoginFormField) => (): void => {
+        makeFieldAsTouched(field);
     }
 
     const shouldShowError = (field: LoginFormField): boolean => {
@@ -72,7 +67,7 @@ export default function Login(){
     return (
         <div className="flex-1 flex justify-center items-center">
             <div className="flex flex-col px-9 py-9 rounded border-2 border-gray-500  w-md">
-                <div className="w-full text-4xl font-bold text-purple-950 flex justify-center pb-12 w-">
+                <div className="w-full text-4xl font-bold text-purple-950 flex justify-center pb-12">
                     Login
                 </div>
                 <div>
@@ -85,8 +80,8 @@ export default function Login(){
                             shouldShowError={shouldShowError("username")}
                             errorMessage={errors.username}
                             value={formData.username}
-                            onChange={handleUsernameInputField}
-                            onBlur={handleUsernameBlur}
+                            onChange={handleInputChange("username")}
+                            onBlur={handleInputBlur("username")}
                         />
                         <AuthInputForm 
                             id="password"
@@ -96,8 +91,8 @@ export default function Login(){
                             shouldShowError={shouldShowError("password")}
                             errorMessage={errors.password}
                             value={formData.password}
-                            onChange={handlePasswordInputField}
-                            onBlur={handlePasswordBlur}
+                            onChange={handleInputChange("password")}
+                            onBlur={handleInputBlur("password")}
                         />
 
                         {
@@ -108,7 +103,13 @@ export default function Login(){
                         }
 
                         <div className="flex justify-center pt-2">
-                            <Button type="submit" buttonName="Login" actionName="Login..." style="w-full" isPending={isPending}/>
+                            <Button 
+                                type="submit" 
+                                buttonName="Login" 
+                                actionName="Login..." 
+                                style="w-full" 
+                                isPending={isPending}
+                            />
                         </div>
                     </form>
                 </div>
