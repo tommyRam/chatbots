@@ -7,7 +7,7 @@ import { ChangeEvent, FormEvent, startTransition, useEffect, useState, useTransi
 import useLoginForm from "@/hooks/use-login-form";
 import { AuthResponse } from "@/types/auth";
 import { LoginFormData } from "@/types/auth";
-import { login } from "@/api/auth-api";
+import { getCurrentUser, login } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
 
 type LoginFormField = keyof LoginFormData
@@ -38,8 +38,11 @@ export default function Login(){
             startTransition(async () => {
                 try {
                     const response = await login(formData);
+                    const userData = await getCurrentUser(response.access_token);
+
                     localStorage.setItem("access_token", response.access_token);
                     localStorage.setItem("refresh_token", response.refresh_token);
+                    localStorage.setItem("user_data", JSON.stringify(userData));
 
                     router.push("/main");
                 } catch (e: unknown){

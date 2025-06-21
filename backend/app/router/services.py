@@ -91,7 +91,7 @@ def revoke_refresh_token(refresh_token: str, db: orm.Session):
         db_token.is_revoked = True
         db.commit()
 
-async def verify_access_token(token: str) -> Optional[dict]:
+def verify_access_token(token: str) -> Optional[dict]:
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.ALGORITHM])
         if payload.get("type") != "access":

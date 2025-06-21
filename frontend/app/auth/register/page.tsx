@@ -6,7 +6,7 @@ import Link from "next/link";
 import UseRegisterForm from "@/hooks/use-register-form";
 import { ChangeEvent, useTransition, useState, FormEvent, startTransition } from "react";
 import { RegisterFormData } from "@/types/auth";
-import { register } from "@/api/auth-api";
+import { getCurrentUser, register } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
 
 type RegisterFormDataField = keyof RegisterFormData;
@@ -39,8 +39,11 @@ export default function Register(){
             startTransition(async () => {
                 try {
                     const response = await register(formData);
+                    const userData = await getCurrentUser(response.access_token);
+
                     localStorage.setItem("access_token", response.access_token);
                     localStorage.setItem("refresh_token", response.refresh_token);
+                    localStorage.setItem("user_data", JSON.stringify(userData));
 
                     router.push("/main");
                 } catch(e: unknown){
