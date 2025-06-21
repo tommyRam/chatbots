@@ -72,7 +72,7 @@ export default function Login(){
     return (
         <div className="flex-1 flex justify-center items-center">
             <div className="flex flex-col px-9 py-9 rounded border-2 border-gray-500  w-md">
-                <div className="w-full text-4xl font-bold text-purple-950 flex justify-center pb-12 w-">
+                <div className="w-full text-4xl font-bold text-purple-950 flex justify-center pb-12">
                     Login
                 </div>
                 <div>

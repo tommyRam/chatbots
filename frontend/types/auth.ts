@@ -19,3 +19,24 @@ export interface LoginResponse {
     token_type: string;
     expire_in: number;
 }
+
+export interface RegisterFormData {
+    email: string;
+    username: string;
+    password: string;
+    confirmPassword: string;
+}
+
+export interface RegisterFormDataErrors {
+    email?: string;
+    username?: string;
+    password?: string;
+    confirmPassword?: string;
+}
+
+export interface RegisterFormDataTouched {
+    email?: string;
+    username?: string;
+    password?: string;
+    confirmPassword?: string;
+}
