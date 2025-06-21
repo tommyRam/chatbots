@@ -8,7 +8,7 @@ export default function DocumentMain(
     }: DocumentMainProps
 ) {
     return (
-        <div className=" w-full h-full bg-gradient-to-l bg-gray-200 rounded-bl-lg rounded-tl-lg">
+        <div className=" w-full h-full bg-gradient-to-l bg-gray-200 rounded-bl-lg rounded-tl-lg shadow-inner">
             Documents list: 
             <div>
             {
