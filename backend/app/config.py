@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_DAYS: int
     ALGORITHM: str
+    PARENT_FOLDER_GOOGLE_DRIVE_ID: str
 
     model_config = SettingsConfigDict(env_file="../.env")
 

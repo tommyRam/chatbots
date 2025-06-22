@@ -39,4 +39,7 @@ tavily-python
 nomic[local]
 langchain-nomic
 protobuf==3.20.3
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
 

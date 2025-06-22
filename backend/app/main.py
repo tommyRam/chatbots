@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from llms_router.rag_api import router as rag_router
 from router.api import router as app_router
+from chat_router.api import router as chat_router
 
 from database import Base, engine
 
@@ -14,6 +15,7 @@ def create_app():
 
     app.include_router(router=rag_router)
     app.include_router(router=app_router)
+    app.include_router(router=chat_router)
     return app
 
 app = create_app()
