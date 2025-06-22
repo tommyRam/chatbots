@@ -1,7 +1,7 @@
 import sqlalchemy.orm as orm
 from datetime import datetime
 
-from .models import UserModel, RefreshTokenModel
+from models import UserModel, RefreshTokenModel
 
 def get_user_by_email(email: str, db: orm.Session):
     return db.query(UserModel).filter(UserModel.email == email).first()
