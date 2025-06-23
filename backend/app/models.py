@@ -36,6 +36,7 @@ class ChatModel(Base):
     user_id = Column(String, ForeignKey("users.id"))
     document_id = Column(String, ForeignKey("documents.id"))
     created_at = Column(DateTime, default=datetime.datetime.now())
+    chat_name = Column(String, unique=True)
 
     user = relationship("UserModel", back_populates="chat")
     document = relationship("DocumentModel", back_populates="chat")
@@ -44,6 +45,7 @@ class DocumentModel(Base):
     __tablename__ = "documents"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     document_name = Column(String)
+    document_drive_id=Column(String, unique=True)
     document_size = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.now())
 

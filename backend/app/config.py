@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int
     ALGORITHM: str
     PARENT_FOLDER_GOOGLE_DRIVE_ID: str
+    PINECONE_API_KEY: str
+    PINECONE_INDEX_NAME: str
 
     model_config = SettingsConfigDict(env_file="../.env")
 

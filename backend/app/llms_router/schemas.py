@@ -7,3 +7,4 @@ class ChatResponse(BaseModel):
 
 class UserRequest(BaseModel):
     query: str
+    chat_id: str

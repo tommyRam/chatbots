@@ -6,10 +6,18 @@ from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.prompts import ChatPromptTemplate
+from fastapi import UploadFile
+from typing import List
 
 from config import settings
-from .utils.rag import create_retriever
-from .utils.formatters import format_docs, format_docs_list, get_unique_union, reciprocal_rank_fusion, format_qa_pair
+from .utils.rag import create_retriever, get_retriever_from_namespace
+from .utils.formatters import (
+    format_docs, 
+    format_docs_list, 
+    get_unique_union, 
+    reciprocal_rank_fusion, 
+    format_qa_pair)
+
 from .schemas import ChatResponse
 from .utils.prompts import prompts
 
@@ -18,10 +26,17 @@ _ = load_dotenv(find_dotenv())
 embedding = GoogleGenerativeAIEmbeddings(model=settings.google_embedding_model)
 llm = ChatGoogleGenerativeAI(model=settings.google_gemini_model)
 
-async def simple_RAG(question):
+async def simple_RAG(
+        question: str, 
+        chat_id: str
+):
     try: 
         prompt = hub.pull("rlm/rag-prompt")
-        retriever = create_retriever(embedding=embedding)
+        # retriever = create_retriever(
+        #     embedding=embedding, 
+        #     uploaded_files=uploaded_files, 
+        #     namespace=chat_id)
+        retriever = get_retriever_from_namespace(embedding=embedding, namespace=chat_id)
 
         relevant_docs = retriever.invoke(input=question)
         relevant_docs_contents = format_docs_list(relevant_docs)
@@ -43,9 +58,16 @@ async def simple_RAG(question):
         print(f"An error was occured: {exception}")
         raise
 
-async def multi_query_RAG(question):
+async def multi_query_RAG(
+        question: str, 
+        chat_id: str
+):
     try:
-        retriever = create_retriever(embedding=embedding)
+        # retriever = create_retriever(
+        #     embedding=embedding, 
+        #     uploaded_files=uploaded_files, 
+        #     namespace=chat_id)
+        retriever = get_retriever_from_namespace(embedding=embedding, namespace=chat_id)
 
         prompts_perpectives = ChatPromptTemplate.from_template(prompts["multi_query_rag_template"])
 
@@ -74,12 +96,19 @@ async def multi_query_RAG(question):
         print(f"An error was occured: {e}")
         raise
 
-async def fusion_RAG(question):
+async def fusion_RAG(
+        question: str, 
+        chat_id: str
+):
     try:
         fusion_prompt_template = prompts["fusion_rag_template"]
         prompt_rag_fusion = ChatPromptTemplate.from_template(fusion_prompt_template)
 
-        retriever = create_retriever(embedding=embedding)
+        # retriever = create_retriever(
+        #     embedding=embedding, 
+        #     uploaded_files=uploaded_files, 
+        #     namespace=chat_id)
+        retriever = get_retriever_from_namespace(embedding=embedding, namespace=chat_id)
 
         generative_queries_chain = (
             prompt_rag_fusion
@@ -111,7 +140,10 @@ async def fusion_RAG(question):
         print(f"An error was occured: {e}")
         raise
 
-async def decomposition_RAG(question): 
+async def decomposition_RAG(
+        question: str, 
+        chat_id: str
+): 
     try:
         generate_queries_for_prompt_decomposition_template = prompts["generate_queries_for_decomposition_rag_template"]
         generate_queries_for_prompt_decomposition = ChatPromptTemplate.from_template(generate_queries_for_prompt_decomposition_template)
@@ -128,7 +160,11 @@ async def decomposition_RAG(question):
 
         decomposition_prompt = ChatPromptTemplate.from_template(prompts["decomposition_rag_template"])
 
-        retriever = create_retriever(embedding=embedding)
+        # retriever = create_retriever(
+        #     embedding=embedding, 
+        #     uploaded_files=uploaded_files, 
+        #     namespace=chat_id)
+        retriever = get_retriever_from_namespace(embedding=embedding, namespace=chat_id)
 
         q_a_pairs = ""
         documents_used = []

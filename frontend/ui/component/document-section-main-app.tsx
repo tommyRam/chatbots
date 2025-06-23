@@ -1,3 +1,7 @@
+"use client";
+
+import { ChangeEvent, FormEvent, useState } from "react";
+
 interface DocumentMainProps {
     documents: [string];
 }
@@ -7,6 +11,55 @@ export default function DocumentMain(
         documents
     }: DocumentMainProps
 ) {
+    const [chatName, setChatName] = useState<string>("");
+    const [selectedFiles, setSelectedFiles] = useState<File[]>();
+    const [isPending, setIsPending] = useState<boolean>(false);
+
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        setChatName(e.target.value);
+        console.log("chat name:" + chatName);
+    }
+
+    const handleUploadFile = (e: ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        setSelectedFiles(Array.from(e.target.files || []));
+        console.log("selected files:" + selectedFiles);
+    }
+
+    const handleSubmit = async (e: FormEvent<HTMLElement>): Promise<void> => {
+        e.preventDefault();
+        console.log("submitting...")
+        setIsPending(true);
+        try {
+            const user_data = JSON.parse(localStorage.getItem("user_data") || "");
+            const accessToken = localStorage.getItem("access_token");
+            const formData = {
+                "user_id": user_data.id,
+                "uploaded_files": selectedFiles,
+                "chat_name": chatName
+            }
+            console.log("form data: " + JSON.stringify(formData));
+            const response = await fetch(
+                "http://127.0.0.1:8000/api/chat/create",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify(formData)
+                }
+            )
+
+            console.log("====================\nresponse: " + JSON.stringify(response))
+        } catch(e){
+            console.log("" + e)
+        }finally {
+            setIsPending(false);
+        }
+    }
+
     return (
         <div className=" w-full h-full bg-gradient-to-l bg-gray-200 rounded-bl-lg rounded-tl-lg shadow-inner">
             Documents list: 
@@ -19,6 +72,28 @@ export default function DocumentMain(
                 ))
                 // documents
             }
+            </div>
+
+            <div>
+                <form onSubmit={handleSubmit}>
+                    <label>Chat name</label>
+                    <input
+                        id="chat_name"
+                        value={chatName}
+                        type="text"
+                        onChange={handleInputChange}
+                        placeholder="Chat name"
+                    />
+                    <label>Document</label>
+                    <input 
+                        id="document"
+                        type="file"
+                        accept=".pdf,.txt,.docx, .doc"
+                        onChange={handleUploadFile}
+                    />
+                    <button>{isPending ? "uploading..." : "upload"}</button>
+
+                </form>
             </div>
         </div>
     )

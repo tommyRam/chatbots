@@ -27,6 +27,7 @@ langchain[openai]
 langchain
 langchain_community
 langchain_core
+langchain-pinecone
 langgraph
 chromadb
 pypdf

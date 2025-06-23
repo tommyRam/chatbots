@@ -14,7 +14,7 @@ async def simple_rag(
     user: LoginUserRequest = Depends(current_user)
     ):
     try:
-        response = await simple_RAG(request.query)
+        response = await simple_RAG(request.query, request.chat_id)
         return response
     except Exception as e:
         raise HTTPException(
@@ -28,7 +28,7 @@ async def multi_query_rag(
     user: LoginUserRequest = Depends(current_user)
     ):
     try: 
-        response = await multi_query_RAG(request.query)
+        response = await multi_query_RAG(request.query, request.chat_id)
         return response
     except Exception as e:
         raise HTTPException(
@@ -42,7 +42,7 @@ async def fusion_rag(
     user: LoginUserRequest = Depends(current_user)
     ):
     try: 
-        response = await fusion_RAG(request.query)
+        response = await fusion_RAG(request.query, request.chat_id)
         return response
     except Exception as e:
         raise HTTPException(
@@ -56,7 +56,7 @@ async def decomposition_rag(
     user: LoginUserRequest = Depends(current_user)
     ):
     try:
-        response = await decomposition_RAG(request.query)
+        response = await decomposition_RAG(request.query, request.chat_id)
         return response
     except Exception as e:
          raise HTTPException(
