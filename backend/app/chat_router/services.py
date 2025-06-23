@@ -1,10 +1,14 @@
 import os
+from typing import List
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 import io
+import sqlalchemy.orm as orm
 
+from .crud import get_chats_from_user_id
+from .schemas import ChatResponse
 from config import settings
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -62,3 +66,16 @@ def download_drive_file(file_id: str):
   except HttpError as error:
     print(f"An error occurred: {error}")
     file = None
+
+def get_user_chats_by_user_id(user_id: str, db: orm.Session) -> List[ChatResponse]:
+   chats = get_chats_from_user_id(user_id=user_id, db=db)
+   chats_formatted_schemas = [
+      ChatResponse(
+         chat_id=chat.id,
+         user_id=chat.user_id,
+         document_id=chat.document_id,
+         chat_name=chat.chat_name
+      )
+      for chat in chats
+   ]
+   return chats_formatted_schemas

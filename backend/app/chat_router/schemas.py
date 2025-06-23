@@ -2,12 +2,11 @@ from pydantic import BaseModel
 from fastapi import UploadFile, File
 from typing import List
 
-class CreateChatUserRequest(BaseModel):
-    user_id: str
-    uploaded_files: List[UploadFile]
-    chat_name: str
-
-class CreateChatResponse(BaseModel):
+class ChatResponse(BaseModel):
     chat_id: str
+    user_id: str
     chat_name: str
-    document_drive_file_id: str
+    document_id: str
+
+class GetChatListRequest(BaseModel):
+    user_id: str

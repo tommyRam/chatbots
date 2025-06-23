@@ -1,11 +1,11 @@
-from fastapi import APIRouter, UploadFile, Depends, Form, File
+from fastapi import APIRouter, UploadFile, Depends, Form, File, HTTPException, status
 import sqlalchemy.orm as orm
 from typing import List
 
-from .services import upload_file_to_drive_folder
+from .services import upload_file_to_drive_folder, get_user_chats_by_user_id
 from .schemas import (
-    CreateChatUserRequest,
-    CreateChatResponse
+    ChatResponse,
+    GetChatListRequest
 )
 from .crud import (
     add_chat, 
@@ -22,7 +22,9 @@ router = APIRouter(
     prefix="/api/chat"
 )
 
-@router.post("/create", response_model=CreateChatResponse)
+# This code take more time to execute due to the all process needed for it
+# TODO: if there is a better way to low the latency then do it (search for it)
+@router.post("/create", response_model=ChatResponse)
 async def create_chat(
     user_id: str = Form(...),
     chat_name: str = Form(...),
@@ -54,11 +56,28 @@ async def create_chat(
         # Add the documents to pinecone then add retriever for it
         create_retriever(uploaded_files=uploaded_files, namespace=chat_by_name.id)
         
-        return CreateChatResponse(
-            chat_id=chat_by_name.id,
-            chat_name=chat_by_name.chat_name,
-            document_drive_file_id=chat_by_name.document_id
+        return ChatResponse(
+            chat_id = chat_by_name.id,
+            user_id = user_id,
+            chat_name = chat_by_name.chat_name,
+            document_drive_file_id = chat_by_name.document_id
         )
     except Exception as e:
         print(f"Error when creating chat: {str(e)}")
         raise(e)
+    
+@router.get("/list/{user_id}", response_model=List[ChatResponse])
+async def get_user_chat_lists(
+    user_id: str,
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
+):
+    try:
+        chats = get_user_chats_by_user_id(user_id=user_id, db=db)
+        return chats
+    except Exception as e:
+        print(f"Error when retrieving chats: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Cannot retrieve your chat lists: {str(e)}"
+        )
