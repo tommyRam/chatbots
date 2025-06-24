@@ -28,20 +28,20 @@ router = APIRouter(
 async def create_chat(
     user_id: str = Form(...),
     chat_name: str = Form(...),
-    uploaded_files: List[UploadFile] = File(...),
+    uploaded_files: UploadFile = File(...),
     user: LoginUserRequest = Depends(current_user),
     db: orm.Session = Depends(get_db)
 ):
     try:
         # here we will consider only the first files because the frontend only send one file(for now)
-        uploaded_drive_file_metadata = upload_file_to_drive_folder(uploaded_files[0].filename)
+        uploaded_drive_file_metadata = upload_file_to_drive_folder(uploaded_files.filename)
         if not upload_file_to_drive_folder:
             raise FileNotFoundError("Error when uploading file into drive!")
         
         new_document = DocumentModel(
             document_name = uploaded_drive_file_metadata["file_name"],
             document_drive_id = uploaded_drive_file_metadata["file_id"],
-            document_size = uploaded_files[0].size
+            document_size = uploaded_files.size
         )
         add_document(document=new_document, db=db)
         document_by_drive_id = get_document_by_drive_id(uploaded_drive_file_metadata["file_id"], db=db)
@@ -60,7 +60,7 @@ async def create_chat(
             chat_id = chat_by_name.id,
             user_id = user_id,
             chat_name = chat_by_name.chat_name,
-            document_drive_file_id = chat_by_name.document_id
+            document_id = chat_by_name.document_id
         )
     except Exception as e:
         print(f"Error when creating chat: {str(e)}")

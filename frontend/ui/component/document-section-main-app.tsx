@@ -12,7 +12,7 @@ export default function DocumentMain(
     }: DocumentMainProps
 ) {
     const [chatName, setChatName] = useState<string>("");
-    const [selectedFiles, setSelectedFiles] = useState<File[]>();
+    const [selectedFiles, setSelectedFiles] = useState<FileList>();
     const [isPending, setIsPending] = useState<boolean>(false);
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -23,7 +23,9 @@ export default function DocumentMain(
 
     const handleUploadFile = (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
-        setSelectedFiles(Array.from(e.target.files || []));
+        const files = e.target.files ? e.target.files : new FileList();
+
+        setSelectedFiles(files);
         console.log("selected files:" + selectedFiles);
     }
 
@@ -34,34 +36,41 @@ export default function DocumentMain(
         try {
             const user_data = JSON.parse(localStorage.getItem("user_data") || "");
             const accessToken = localStorage.getItem("access_token");
-            const formData = {
-                "user_id": user_data.id,
-                "uploaded_files": selectedFiles,
-                "chat_name": chatName
+            const formData = new FormData();
+            formData.append("user_id", user_data.id);
+            formData.append("chat_name", chatName);
+
+            for (let i = 0;selectedFiles && i < selectedFiles.length; i++) {
+                formData.append("uploaded_files", selectedFiles[i]);
             }
-            console.log("form data: " + JSON.stringify(formData));
+
             const response = await fetch(
                 "http://127.0.0.1:8000/api/chat/create",
                 {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
                         "Authorization": `Bearer ${accessToken}`
                     },
-                    body: JSON.stringify(formData)
+                    body: formData
                 }
-            )
-
+            ) 
             console.log("====================\nresponse: " + JSON.stringify(response))
+            if(!response.ok){
+                const errorResponse = await response.json();
+                throw new Error(errorResponse.detail);
+            }
+
+        const ans =  await response.json();
+        console.log("ans " + JSON.stringify(ans))
         } catch(e){
-            console.log("" + e)
+            console.log("" + JSON.stringify(e))
         }finally {
             setIsPending(false);
         }
     }
 
     return (
-        <div className=" w-full h-full bg-gradient-to-l bg-gray-200 rounded-bl-lg rounded-tl-lg shadow-inner">
+        <div className="w-full h-[98%] mr-2. bg-white shadow-gray-700 inset-shadow-2xs inset-shadow-indigo-50">
             Documents list: 
             <div>
             {

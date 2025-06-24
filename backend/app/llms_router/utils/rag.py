@@ -36,44 +36,44 @@ embedding = GoogleGenerativeAIEmbeddings(model=settings.google_embedding_model)
 #     except: 
 #         print("Error from loading data")
 #         raise
-def load_data_from_uploads(uploaded_files: List[UploadFile]):
+def load_data_from_uploads(uploaded_file: UploadFile):
     docs = []
-    for uploaded_file in uploaded_files:
-        try:
-            # Create temporary file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{uploaded_file.filename}") as tmp_file:
-                content = uploaded_file.file.read()
-                tmp_file.write(content)
-                tmp_file_path = tmp_file.name
-            
-            # Reset file pointer for potential reuse
-            uploaded_file.file.seek(0)
 
-            file_extension = os.path.splitext(uploaded_file.filename)[1].lower()
+    try:
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{uploaded_file.filename}") as tmp_file:
+            content = uploaded_file.file.read()
+            tmp_file.write(content)
+            tmp_file_path = tmp_file.name
+        
+        # Reset file pointer for potential reuse
+        uploaded_file.file.seek(0)
 
-            if file_extension == ".pdf":
-                loader = PyPDFLoader(tmp_file_path)
-            elif file_extension == ".txt":
-                loader = TextLoader(tmp_file_path, encoding="utf-8")
-            elif file_extension in [".docx", ".doc"]:
-                loader = Docx2txtLoader(tmp_file_path)
-            else:
-                loader = TextLoader(tmp_file_path, encoding="utf-8")
+        file_extension = os.path.splitext(uploaded_file.filename)[1].lower()
 
-            file_docs = loader.load()
+        if file_extension == ".pdf":
+            loader = PyPDFLoader(tmp_file_path)
+        elif file_extension == ".txt":
+            loader = TextLoader(tmp_file_path, encoding="utf-8")
+        elif file_extension in [".docx", ".doc"]:
+            loader = Docx2txtLoader(tmp_file_path)
+        else:
+            loader = TextLoader(tmp_file_path, encoding="utf-8")
 
-            for doc in file_docs:
-                doc.metadata["source_file"] = uploaded_file.filename
-                doc.metadata["file_type"] = file_extension
-                doc.metadata["upload_time"] = datetime.now().isoformat()
-            
-            docs.extend(file_docs)
-        except Exception as e:
-            print(f"Error loading file {uploaded_file.filename}: {str(e)}")
-            continue
-        finally:
-            if "tmp_file_pat" in locals() and os.path.exists(tmp_file_path):
-                os.unlink(tmp_file_path)
+        file_docs = loader.load()
+
+        for doc in file_docs:
+            doc.metadata["source_file"] = uploaded_file.filename
+            doc.metadata["file_type"] = file_extension
+            doc.metadata["upload_time"] = datetime.now().isoformat()
+        
+        docs.extend(file_docs)
+    except Exception as e:
+        print(f"Error loading file {uploaded_file.filename}: {str(e)}")
+        raise e
+    finally:
+        if "tmp_file_pat" in locals() and os.path.exists(tmp_file_path):
+            os.unlink(tmp_file_path)
     
     if not docs:
         raise ValueError("No Documents could be loaded from uploaded files")
@@ -121,7 +121,7 @@ def create_retriever(
         index = pc.Index(settings.PINECONE_INDEX_NAME)
         vectorestore = PineconeVectorStore(index=index, embedding=embedding, namespace=namespace)
 
-        docs = load_data_from_uploads(uploaded_files=uploaded_files)
+        docs = load_data_from_uploads(uploaded_file=uploaded_files)
         splitter = make_splitter(chunk_size=1000, chunk_overlap=200)
         docs_spits = splitter.split_documents(docs)
 

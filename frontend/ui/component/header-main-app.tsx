@@ -19,7 +19,7 @@ export default function HeaderMain() {
     }, [username, setUsername])
 
     return (
-        <div className="flex items-center justify-between w-full h-14 bg-gradient-to-b bg-gray-200 px-7">
+        <div className="flex items-center justify-between w-full h-14 bg-gradient-to-b bg-white px-7">
             <div></div>
             <div
                 className="flex items-center bg-gray-200 rounded-3xl shadow-gray-300 shadow-inner h-[70%] text-purple-950 font-bold px-3.5"
