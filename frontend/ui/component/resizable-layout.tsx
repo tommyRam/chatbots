@@ -51,25 +51,25 @@ export default function ResizableLayout(
         >
             <div 
                 ref={containerRef}
-                className="flex-1 flex overflow-hidden"
+                className="flex-1 flex justify-center overflow-hidden"
             >
                 <div
-                    className="border-r border-gray-300"
+                    className="flex justify-center items-center"
                     style={{ width: `${leftWidth}%` }}
                     
                 >
                     {children.leftComponent}
                 </div>
                 <div 
-                    className="flex justify-center items-center w-0.5 hover:bg-purple-950 cursor-col-resize transition-colors rounded-2xl"
+                    className="flex justify-center items-center w-0.5 h-[90%] mt-[2%] bg-gray-200 hover:bg-gray-700 cursor-col-resize transition-colors rounded-2xl"
                     onMouseDown={handleMouseDown}
                 >
                     <div
-                        className="w-3 h-8 bg-gray-500"
+                        className="w-9 h-8 bg-purple-900"
                     ></div>
                 </div>
                 <div
-                    className="flex"
+                    className="flex justify-center items-center"
                     style={{width: `${100 - leftWidth}%`}}
                 >
                     {children.rightComponent}

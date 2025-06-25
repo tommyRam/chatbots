@@ -20,9 +20,10 @@ export default function SideBarMain () {
             className={`
                 ${isCollapsed ? 'w-16' : 'w-3xs'}
                 h-full
-                bg-purple-200 transition-all duration-300 ease-in-out
+                bg-white transition-all duration-300 ease-in-out
                 flex flex-col shadow-sm 
                 items-center
+                border-r-4 border-gray-400
             `}
         >
             <div 

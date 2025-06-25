@@ -1,0 +1,37 @@
+tomorrow: 
+  Refactoring
+  front: UI for create chat - global UI 
+  backend: change rag-api output (add metadata)
+
+
+- Frontend:
+    - Creating chat (update sidebar, header, chat message) - logic done
+    - route management
+    - chatting and send factual data for response evaluations (AI as judge)
+    - Choose the rag-endpoint
+    - Design:
+        - Sidebar (chat list, search from chat)
+        - Header (user, actual chat)
+        - Chat section
+        - Documents sections: (showing documents with metadata, showing documents in the selected documents directly)
+    - automatically refresh access_token
+
+- Backend
+
+  - update the output of rag-api to all Documents (including metadata)
+  - endpoint for evaluation (AI as a judge)
+  - add another RAG techniques
+  - Manage memory for agentic RAG
+  - delete chat (delete document from drive, from pinecone and then from database)
+  - add testing
+
+- Deployment
+
+  - Dockerize backend
+  - deploy frontend into vercel
+  - apply ci/cd
+
+- Database
+
+  - Migrate into postgres
+  - In prod drive may be changed into (aws s3, google cloud storage, ...)

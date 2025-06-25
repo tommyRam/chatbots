@@ -56,3 +56,5 @@ ehthumbs.db
 Icon?
 
 __pycache__
+credentials.json
+dbfile.db

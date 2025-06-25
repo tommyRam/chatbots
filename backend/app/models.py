@@ -1,9 +1,6 @@
-import sqlalchemy
 import datetime
-import sqlalchemy.orm as orm
-import passlib.hash as hash
 import uuid
-from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean, Float
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -20,6 +17,7 @@ class UserModel(Base):
     created_at = Column(DateTime, default=datetime.datetime.now())
 
     refresh_tokens = relationship("RefreshTokenModel", back_populates="user")
+    chat = relationship("ChatModel", back_populates="user")
 
 class RefreshTokenModel(Base):
     __tablename__ = "refresh_tokens"
@@ -32,5 +30,23 @@ class RefreshTokenModel(Base):
 
     user = relationship("UserModel", back_populates="refresh_tokens")
 
+class ChatModel(Base):
+    __tablename__ = "chats"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    user_id = Column(String, ForeignKey("users.id"))
+    document_id = Column(String, ForeignKey("documents.id"))
+    created_at = Column(DateTime, default=datetime.datetime.now())
+    chat_name = Column(String, unique=True)
 
+    user = relationship("UserModel", back_populates="chat")
+    document = relationship("DocumentModel", back_populates="chat")
 
+class DocumentModel(Base):
+    __tablename__ = "documents"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    document_name = Column(String)
+    document_drive_id=Column(String, unique=True)
+    document_size = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.now())
+
+    chat = relationship("ChatModel", back_populates="document")

@@ -1,6 +1,6 @@
 "use client";
 
-import ChatMain from "@/ui/component/chat-main-app";
+import ChatMain from "@/ui/component/chat-section/chat-main-app";
 import DocumentMain from "@/ui/component/document-section-main-app";
 import ResizableLayout from "@/ui/component/resizable-layout";
 import { useState } from "react";
@@ -17,7 +17,8 @@ export default function page() {
                     message={message}
                     setMessage={setMessage}
                     setDocuments={setDocuments}
-                />}
+                />
+                }
                 rightComponent={
                 <DocumentMain 
                     documents={documents}
