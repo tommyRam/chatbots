@@ -17,7 +17,8 @@ export default function page() {
                     message={message}
                     setMessage={setMessage}
                     setDocuments={setDocuments}
-                />}
+                />
+                }
                 rightComponent={
                 <DocumentMain 
                     documents={documents}

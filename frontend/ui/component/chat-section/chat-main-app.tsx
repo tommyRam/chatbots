@@ -1,5 +1,6 @@
 "use client";
 
+import CreateChat from "../create-chat-section/create-chat";
 import Chat from "./chat-app";
 
 interface ChatMainProps {
@@ -17,11 +18,12 @@ export default function ChatMain(
 ) {
     return (
         <div className="w-full h-[98%] ml-2.5 bg-white rounded-lg shadow-gray-700 inset-shadow-2xs inset-shadow-indigo-50">
-            <Chat
+            {/* <Chat
                 message={message}
                 setMessage={setMessage}
                 setDocuments={setDocuments}
-            />
+            /> */}
+            <CreateChat />
         </div>
     )
 }
