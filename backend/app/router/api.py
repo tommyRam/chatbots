@@ -4,9 +4,16 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from .schemas import TokenResponse, RegisterUserRequest, LoginUserRequest, UserResponse, UserSchema
 from .crud import get_user_by_email, get_user_by_username
-from .models import UserModel
+from models import UserModel
 from config import settings
-from .services import get_db, create_user, create_access_token, create_refresh_token, is_user_exist, verify_password, current_user
+from .services import (
+    get_db, 
+    create_user, 
+    create_access_token, 
+    create_refresh_token, 
+    is_user_exist, 
+    verify_password, 
+    current_user)
 
 router = APIRouter(
     prefix="/api/app", 

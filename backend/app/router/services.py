@@ -9,7 +9,7 @@ from fastapi import Depends, HTTPException, status
 
 from database import SessionLocal, Base, engine
 from .schemas import RegisterUserRequest, UserResponse, TokenResponse
-from .models import UserModel, RefreshTokenModel
+from models import UserModel, RefreshTokenModel
 from .crud import add_user, add_refresh_token, get_refresh_token_by_token, get_user_by_id, get_user_by_email, get_user_by_username, get_active_refresh_token_from_user_id
 from config import settings
 
