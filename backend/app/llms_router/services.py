@@ -6,11 +6,10 @@ from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.prompts import ChatPromptTemplate
-from fastapi import UploadFile
-from typing import List
+
 
 from config import settings
-from .utils.rag import create_retriever, get_retriever_from_namespace
+from .utils.rag import get_vectorestore_from_namespace
 from .utils.formatters import (
     format_docs, 
     format_docs_list, 
@@ -32,13 +31,8 @@ async def simple_RAG(
 ):
     try: 
         prompt = hub.pull("rlm/rag-prompt")
-        # retriever = create_retriever(
-        #     embedding=embedding, 
-        #     uploaded_files=uploaded_files, 
-        #     namespace=chat_id)
-        retriever = get_retriever_from_namespace(embedding=embedding, namespace=chat_id)
-
-        relevant_docs = retriever.invoke(input=question)
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+        relevant_docs = vectorestore.similarity_search_with_score(query=question)
         relevant_docs_contents = format_docs_list(relevant_docs)
         formatted_relevant_docs_into_one_long_string = format_docs(relevant_docs)    
 
@@ -63,11 +57,11 @@ async def multi_query_RAG(
         chat_id: str
 ):
     try:
-        # retriever = create_retriever(
-        #     embedding=embedding, 
-        #     uploaded_files=uploaded_files, 
-        #     namespace=chat_id)
-        retriever = get_retriever_from_namespace(embedding=embedding, namespace=chat_id)
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+        retriever = vectorestore.as_retriever(
+            search_type="similarity_score_threshold",
+            search_kwargs={"k": 4, "score_threshold": 0.4}
+        )
 
         prompts_perpectives = ChatPromptTemplate.from_template(prompts["multi_query_rag_template"])
 
@@ -104,11 +98,11 @@ async def fusion_RAG(
         fusion_prompt_template = prompts["fusion_rag_template"]
         prompt_rag_fusion = ChatPromptTemplate.from_template(fusion_prompt_template)
 
-        # retriever = create_retriever(
-        #     embedding=embedding, 
-        #     uploaded_files=uploaded_files, 
-        #     namespace=chat_id)
-        retriever = get_retriever_from_namespace(embedding=embedding, namespace=chat_id)
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+        retriever = vectorestore.as_retriever(
+            search_type="similarity_score_threshold",
+            search_kwargs={"k": 4, "score_threshold": 0.4}
+        )
 
         generative_queries_chain = (
             prompt_rag_fusion
@@ -160,17 +154,13 @@ async def decomposition_RAG(
 
         decomposition_prompt = ChatPromptTemplate.from_template(prompts["decomposition_rag_template"])
 
-        # retriever = create_retriever(
-        #     embedding=embedding, 
-        #     uploaded_files=uploaded_files, 
-        #     namespace=chat_id)
-        retriever = get_retriever_from_namespace(embedding=embedding, namespace=chat_id)
-
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+        
         q_a_pairs = ""
         documents_used = []
 
         for q in generated_questions:
-            relevant_docs = retriever.invoke(input=q)
+            relevant_docs = vectorestore.similarity_search_with_score(query=question)
             relevant_docs_contents = format_docs_list(relevant_docs)
             formatted_relevant_docs_into_one_long_string = format_docs(relevant_docs)   
 

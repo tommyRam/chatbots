@@ -16,7 +16,7 @@ from .crud import (
 from router.schemas import LoginUserRequest
 from router.services import current_user, get_db
 from models import DocumentModel, ChatModel
-from llms_router.utils.rag import create_retriever
+from llms_router.utils.rag import upload_data_to_vectorestore
 
 router = APIRouter(
     prefix="/api/chat"
@@ -54,7 +54,7 @@ async def create_chat(
         chat_by_name = get_chat_by_chat_name(chat_name=chat_name, db=db)
 
         # Add the documents to pinecone then add retriever for it
-        create_retriever(uploaded_files=uploaded_files, namespace=chat_by_name.id)
+        upload_data_to_vectorestore(uploaded_files=uploaded_files, namespace=chat_by_name.id)
         
         return ChatResponse(
             chat_id = chat_by_name.id,
