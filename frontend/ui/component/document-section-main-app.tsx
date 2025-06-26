@@ -3,7 +3,7 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 
 interface DocumentMainProps {
-    documents: [string];
+    documents?: DocMessageResponse[];
 }
 
 export default function DocumentMain(
@@ -74,9 +74,9 @@ export default function DocumentMain(
             Documents list: 
             <div>
             {
-                documents.map((document) => (
-                    <div key={document.length}>
-                        {document}
+                documents && documents.map((document) => (
+                    <div key={document.content.length}>
+                        {document.content}
                     </div>
                 ))
                 // documents

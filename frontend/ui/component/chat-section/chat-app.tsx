@@ -7,11 +7,12 @@ import { useRouter } from "next/navigation";
 import ChatHeader from "./chat-header";
 import ChatInput from "./chat-input";
 import ChatMessages from "./chat-message";
+import { transformMessageResponse } from "@/utils/transformers";
 
 interface ChatProps {
     message: string;
     setMessage: (newMessage: string) => void;
-    setDocuments: (newDocuments: [string]) => void;
+    setDocuments: (newDocuments: DocMessageResponse[]) => void;
 }
 
 export default function Chat(
@@ -41,10 +42,11 @@ export default function Chat(
                 throw new Error("Missing access token");
             }
 
-            const response = await sendUserInput(inputValue, accessToken, "/api/RAG/simpleRAG");
+            const response: BackendMessageResponse = await sendUserInput(inputValue, accessToken, "/api/RAG/simpleRAG");
+            const responseFormatted: MessageResponse = transformMessageResponse(response);
             if(response.chat_response) {
                 setMessage(response.chat_response);
-                setDocuments(response.documents);
+                setDocuments(responseFormatted.documents);
             }
         }catch (e){
             console.log(e);
