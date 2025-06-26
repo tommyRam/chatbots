@@ -1,7 +1,7 @@
 tomorrow: 
   Refactoring
-  front: UI for create chat - global UI 
-  backend: change rag-api output (add metadata)
+  front: chat section UI
+  backend: check expiration token in the backend not working well / db for conversation
 
 
 - Frontend:
@@ -17,8 +17,6 @@ tomorrow:
     - automatically refresh access_token
 
 - Backend
-
-  - update the output of rag-api to all Documents (including metadata)
   - endpoint for evaluation (AI as a judge)
   - add another RAG techniques
   - Manage memory for agentic RAG

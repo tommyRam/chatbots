@@ -7,11 +7,13 @@ import { useRouter } from "next/navigation";
 import ChatHeader from "./chat-header";
 import ChatInput from "./chat-input";
 import ChatMessages from "./chat-message";
+import { transformMessageResponse } from "@/utils/transformers";
+import { useChat } from "@/hooks/chat-context";
 
 interface ChatProps {
     message: string;
     setMessage: (newMessage: string) => void;
-    setDocuments: (newDocuments: [string]) => void;
+    setDocuments: (newDocuments: DocMessageResponse[]) => void;
 }
 
 export default function Chat(
@@ -25,6 +27,8 @@ export default function Chat(
     const [inputValue, setInputValue] = useState<string>("");
     const [isPending, setIsPending] = useState<boolean>(false);
     const router = useRouter();
+
+    const { currentChat } = useChat();
 
     const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
@@ -41,11 +45,16 @@ export default function Chat(
                 throw new Error("Missing access token");
             }
 
-            const response = await sendUserInput(inputValue, accessToken, "/api/RAG/simpleRAG");
-            if(response.chat_response) {
-                setMessage(response.chat_response);
-                setDocuments(response.documents);
-            }
+            if(currentChat && currentChat.chatId){
+                const response: BackendMessageResponse = await sendUserInput(inputValue, currentChat.chatId,accessToken);
+                const responseFormatted: MessageResponse = transformMessageResponse(response);
+                if(response.chat_response) {
+                    setMessage(response.chat_response);
+                    setDocuments(responseFormatted.documents);
+                }
+            }else {
+                router.push("/auth/login");
+            }            
         }catch (e){
             console.log(e);
             throw e;

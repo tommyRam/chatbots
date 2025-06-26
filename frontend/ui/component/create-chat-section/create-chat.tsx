@@ -46,6 +46,7 @@ export default function CreateChat() {
                 throw new Error("Expired credentials");
             }
             const response = await createNewChat(formData, accessToken, "/api/chat/create");
+            
         } catch(e){
             console.log("" + JSON.stringify(e))
         }finally {

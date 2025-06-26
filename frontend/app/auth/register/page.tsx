@@ -8,6 +8,7 @@ import { ChangeEvent, useTransition, useState, FormEvent, startTransition } from
 import { RegisterFormData } from "@/types/auth";
 import { getCurrentUser, register } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
+import { getUserChatList } from "@/api/chat-api";
 
 type RegisterFormDataField = keyof RegisterFormData;
 
@@ -38,6 +39,7 @@ export default function Register(){
         if (isValidRegisterForm){
             startTransition(async () => {
                 try {
+                    router.push("/main/chat/new");
                     const response = await register(formData);
                     const userData = await getCurrentUser(response.access_token);
 
@@ -45,7 +47,8 @@ export default function Register(){
                     localStorage.setItem("refresh_token", response.refresh_token);
                     localStorage.setItem("user_data", JSON.stringify(userData));
 
-                    router.push("/main");
+                    const chatList = await getUserChatList(userData.id, response.access_token);
+                    localStorage.setItem("chatList", JSON.stringify(chatList));
                 } catch(e: unknown){
                     setSubmittingError("" + JSON.stringify(e));
                 }        

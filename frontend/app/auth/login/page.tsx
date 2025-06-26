@@ -9,6 +9,7 @@ import { AuthResponse } from "@/types/auth";
 import { LoginFormData } from "@/types/auth";
 import { getCurrentUser, login } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
+import { getUserChatList } from "@/api/chat-api";
 
 type LoginFormField = keyof LoginFormData
 
@@ -37,6 +38,8 @@ export default function Login(){
         if (isValidForm){
             startTransition(async () => {
                 try {
+                    router.push("/main/chat/new");
+
                     const response = await login(formData);
                     const userData = await getCurrentUser(response.access_token);
 
@@ -44,7 +47,8 @@ export default function Login(){
                     localStorage.setItem("refresh_token", response.refresh_token);
                     localStorage.setItem("user_data", JSON.stringify(userData));
 
-                    router.push("/main");
+                    const chatList = await getUserChatList(userData.id, response.access_token);
+                    localStorage.setItem("chatList", JSON.stringify(chatList));
                 } catch (e: unknown){
                     setSubmittingError("" + e);
                 }

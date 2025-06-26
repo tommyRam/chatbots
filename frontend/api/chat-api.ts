@@ -2,11 +2,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const sendUserInput = async (
     query: string,
+    chatId: string,
     accessToken: string,
-    endpoint: string
-) => {
+    endpoint: string = "/api/RAG/simpleRAG"
+): Promise<BackendMessageResponse> => {
     const SIMPLE_RAG_ENPOINT_URL = API_URL + endpoint;
-     const queryRequest = {"query": query};
+     const queryRequest = {"query": query, "chat_id": chatId};
 
      try {
             const response = await fetch(
@@ -39,12 +40,12 @@ export const sendUserInput = async (
 export const createNewChat = async (
     formData: FormData,
     accessToken: string,
-    endpoint: string
-) => {
+    endpoint: string = "/api/chat/create"
+): Promise<BackendchatSchema> => {
     const CREATE_URL_ENDPOINT = API_URL + endpoint;
     try {
         const response = await fetch(
-                "http://127.0.0.1:8000/api/chat/create",
+                CREATE_URL_ENDPOINT,
                 {
                     method: "POST",
                     headers: {
@@ -60,6 +61,32 @@ export const createNewChat = async (
 
         return await response.json();
     }catch(e) {
+        throw e;
+    }
+}
+
+export const getUserChatList = async (
+    userId: string,
+    accessToken: string,
+    endpoint: string = "/api/chat/list/"
+): Promise<BackendchatSchema[]> => {
+    const USER_CHAT_LIST_API = API_URL + endpoint + userId;
+    try {
+        const response = await fetch(
+            USER_CHAT_LIST_API,
+            {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            }
+        );
+        if(!response.ok){
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.detail);
+        }
+
+        return await response.json();
+    }catch(e: unknown) {
         throw e;
     }
 }
