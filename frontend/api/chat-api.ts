@@ -2,11 +2,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const sendUserInput = async (
     query: string,
+    chatId: string,
     accessToken: string,
     endpoint: string = "/api/RAG/simpleRAG"
 ): Promise<BackendMessageResponse> => {
     const SIMPLE_RAG_ENPOINT_URL = API_URL + endpoint;
-     const queryRequest = {"query": query};
+     const queryRequest = {"query": query, "chat_id": chatId};
 
      try {
             const response = await fetch(

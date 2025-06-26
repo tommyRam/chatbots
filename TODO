@@ -1,7 +1,7 @@
 tomorrow: 
   Refactoring
-  front: global UI 
-  backend: check expiration token in the backend not working well
+  front: chat section UI
+  backend: check expiration token in the backend not working well / db for conversation
 
 
 - Frontend:

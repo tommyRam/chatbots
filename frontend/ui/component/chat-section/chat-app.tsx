@@ -8,6 +8,7 @@ import ChatHeader from "./chat-header";
 import ChatInput from "./chat-input";
 import ChatMessages from "./chat-message";
 import { transformMessageResponse } from "@/utils/transformers";
+import { useChat } from "@/hooks/chat-context";
 
 interface ChatProps {
     message: string;
@@ -27,6 +28,8 @@ export default function Chat(
     const [isPending, setIsPending] = useState<boolean>(false);
     const router = useRouter();
 
+    const { currentChat } = useChat();
+
     const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
         setInputValue(e.target.value);
@@ -42,12 +45,16 @@ export default function Chat(
                 throw new Error("Missing access token");
             }
 
-            const response: BackendMessageResponse = await sendUserInput(inputValue, accessToken, "/api/RAG/simpleRAG");
-            const responseFormatted: MessageResponse = transformMessageResponse(response);
-            if(response.chat_response) {
-                setMessage(response.chat_response);
-                setDocuments(responseFormatted.documents);
-            }
+            if(currentChat && currentChat.chatId){
+                const response: BackendMessageResponse = await sendUserInput(inputValue, currentChat.chatId,accessToken);
+                const responseFormatted: MessageResponse = transformMessageResponse(response);
+                if(response.chat_response) {
+                    setMessage(response.chat_response);
+                    setDocuments(responseFormatted.documents);
+                }
+            }else {
+                router.push("/auth/login");
+            }            
         }catch (e){
             console.log(e);
             throw e;
