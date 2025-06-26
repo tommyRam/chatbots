@@ -1,28 +1,51 @@
 "use client";
 
-import { ChevronLeft, Menu, MessageSquare, Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, Menu, MessageCircleMoreIcon, MessageSquare, Plus, Search, TrashIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useChat } from "@/hooks/chat-context";
+import { capitalizeFirstLetter } from "@/utils/transformers";
 
 export default function SideBarMain () {
     const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+    const {
+        chats,
+        currentChat,
+        handleAddAllChat,
+        handleAddChat,
+        handleChangeCurrentChat,
+        removeCurrentChat,
+        loadChats
+    } = useChat();
+    const router = useRouter();
 
     const toogleSidebar = () => {
         setIsCollapsed(!isCollapsed);
     }
 
-    const menuItems = [
-        {icon: MessageSquare, label: "Chat"},
-        {icon: Search, label: "Search chat"}
-    ]
+    const handleSetCurrentChat = (index: number): void => {
+        handleChangeCurrentChat(chats[index]);
+        localStorage.setItem("currentChat", JSON.stringify(chats[index]));
+
+        router.push(`${chats[index].chatId}`);
+    }
+
+    const handleCreateNewChat = (): void => {
+        removeCurrentChat();
+        localStorage.removeItem("currentChat");
+
+        router.push("/main/chat/new");
+    }
 
     return (
         <div
             className={`
                 ${isCollapsed ? 'w-16' : 'w-3xs'}
                 h-full
-                bg-purple-200 transition-all duration-300 ease-in-out
+                bg-white transition-all duration-300 ease-in-out
                 flex flex-col shadow-sm 
                 items-center
+                border-r-4 border-gray-400
             `}
         >
             <div 
@@ -44,20 +67,72 @@ export default function SideBarMain () {
                 </button>
             </div>
 
-            <div className="p-4 w-full flex items-center justify-center">
-                <button 
-                    className={`
-                    ${isCollapsed ? 'w-9 h-9 p-0' : 'w-full px-4 py-2'} 
-                    bg-purple-900 hover:bg-purple-800 
-                    text-white rounded-lg 
-                    transition-all duration-200 
-                    flex items-center justify-center gap-2
-                    font-medium
-                    `}
-                >
-                    <Plus className="h-4 w-4" />
-                    {!isCollapsed && <span>New Chat</span>}
-            </button>
+            <div className="p-4 w-full h-full flex flex-col items-center">
+                <div className="flex-1 w-full flex flex-col">
+                    <button 
+                        className={`
+                        ${isCollapsed ? 'w-9 h-9 p-0' : 'w-full px-4 py-2'} 
+                        bg-purple-900 hover:bg-purple-700 
+                        text-white rounded-lg 
+                        transition-all duration-200 
+                        flex items-center justify-center gap-2
+                        font-medium
+                        hover: cursor-pointer
+                        `}
+                        onClick={handleCreateNewChat}
+                    >
+                        <Plus className="h-5 w-5" />
+                        {!isCollapsed && <span>New Chat</span>}
+                    </button>    
+                    <button
+                        className={`
+                        ${isCollapsed ? 'w-9 h-9 p-0' : 'w-full px-4 py-2'}
+                        mt-3.5
+                        hover:bg-purple-700
+                        text-gray-600 hover:text-white
+                        hover:cursor-pointer
+                        rounded-lg
+                        shadow-inner shadow-purple-100 hover:shadow-none
+                        flex items-center justify-center gap-2
+                        font-medium
+                        `}  
+                    >
+                        <MessageCircleMoreIcon className="h-5 w-5" />
+                        {!isCollapsed && <span>Chats</span>}
+                    </button>                
+                </div>
+                <div className="h-[80%] w-full">
+                   {
+                    !isCollapsed && 
+                    <>
+                        <div className="font-bold text-xs text-gray-700">
+                            Recents chat
+                        </div>
+                        <div className="mt-1">
+                            {
+                                chats && (
+                                    chats.map((value, index) => {
+                                        return (
+                                            <div 
+                                                onClick={() => handleSetCurrentChat(index)}
+                                                key={value.chatId} 
+                                                className={`flex items-center justify-between my-2 py-1.5 px-1.5 hover:cursor-pointer rounded-lg ${currentChat?.chatId === value.chatId ? "bg-purple-900 hover:bg-purple-800" : "bg-white hover:bg-purple-50 "}`}
+                                            >
+                                                <div className={`font-bold  ${currentChat?.chatId === value.chatId ? "text-white" : "text-gray-500"}`}>
+                                                    {capitalizeFirstLetter(value.chatName)}
+                                                </div>
+                                                <div className="flex items-center justify-center rounded-md hover:cursor-pointer hover:border-[0.5px] border-gray-600 w-7 h-7">
+                                                    <TrashIcon  className={`hover:text-purple-950 h-4 w-4 hover:h-3.5 hover:w-3.5 ${currentChat?.chatId === value.chatId ? "text-white" : "text-gray-500" }`}/>
+                                                </div>                                                               
+                                            </div>
+                                        )
+                                    })
+                                )
+                            }
+                        </div>
+                    </>
+                   }
+                </div>
             </div>                    
         </div>
     )

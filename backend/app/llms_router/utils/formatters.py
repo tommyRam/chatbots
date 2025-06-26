@@ -1,10 +1,34 @@
 from langchain.load import dumps, loads
+from llms_router.schemas import DocumentSchema
 
 def format_docs(docs):
+    if isinstance(docs[0], tuple):
+        return "\n\n".join(doc[0].page_content for doc in docs)
     return "\n\n".join(doc.page_content for doc in docs)
 
 def format_docs_list(docs):
-    return [doc.page_content for doc in docs]
+    print("format list")
+    docs_schemas = []
+    for doc in docs:
+        score = None
+        if isinstance(doc, tuple):
+            doc, score = doc
+
+        doc_schema = DocumentSchema(
+            id=doc.id,
+            content=doc.page_content,
+            file_type=doc.metadata["file_type"],
+            page=doc.metadata["page"],
+            page_label=doc.metadata["page_label"],
+            title=doc.metadata["title"],
+            upload_time=doc.metadata["upload_time"],
+        )
+
+        if score:
+            doc_schema.score = score
+
+        docs_schemas.append(doc_schema)
+    return docs_schemas
 
 def get_unique_union(documents: list[list]):
     """Unique union of retrieved docs"""

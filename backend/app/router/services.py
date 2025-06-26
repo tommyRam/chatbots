@@ -95,12 +95,12 @@ def verify_access_token(token: str) -> Optional[dict]:
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.ALGORITHM])
         if payload.get("type") != "access":
-            return None
+            raise
         return payload
     except jwt.ExpiredSignatureError:
-        return None
+        raise
     except jwt.PyJWTError:
-        return None
+        raise
     
 def is_user_exist(unique_user_id: str, db: orm.Session) -> bool:
     user_from_email = get_user_by_email(unique_user_id, db)
