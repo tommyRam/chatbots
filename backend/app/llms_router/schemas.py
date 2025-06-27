@@ -11,7 +11,7 @@ class DocumentSchema(BaseModel):
     upload_time: Optional[str]
     score: Optional[str] = ""
 
-class ChatResponse(BaseModel):
+class ChatMessageResponse(BaseModel):
     documents: List[DocumentSchema]
     chat_response: str
 
