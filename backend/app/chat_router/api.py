@@ -2,10 +2,17 @@ from fastapi import APIRouter, UploadFile, Depends, Form, File, HTTPException, s
 import sqlalchemy.orm as orm
 from typing import List
 
-from .services import upload_file_to_drive_folder, get_user_chats_by_user_id
+from .services import (
+    upload_file_to_drive_folder, 
+    get_user_chats_by_user_id,
+    get_user_chat_ai_messages_by_chat_id,
+    get_user_chat_human_messages_by_chat_id
+)
 from .schemas import (
     ChatResponse,
-    GetChatListRequest
+    GetChatListRequest,
+    ChatAIMessageResponse,
+    ChatHumanResponse
 )
 from .crud import (
     add_chat, 
@@ -33,8 +40,7 @@ async def create_chat(
     db: orm.Session = Depends(get_db)
 ):
     try:
-        # here we will consider only the first files because the frontend only send one file(for now)
-        uploaded_drive_file_metadata = upload_file_to_drive_folder(uploaded_files.filename)
+        uploaded_drive_file_metadata = await upload_file_to_drive_folder(uploaded_files)
         if not upload_file_to_drive_folder:
             raise FileNotFoundError("Error when uploading file into drive!")
         
@@ -80,4 +86,34 @@ async def get_user_chat_lists(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Cannot retrieve your chat lists: {str(e)}"
+        )
+    
+@router.get("/list/ai-message/{chat_id}", response_model=List[ChatAIMessageResponse])
+def get_chat_ai_messages(
+    chat_id: str,
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
+):
+    try: 
+        ai_messages = get_user_chat_ai_messages_by_chat_id(chat_id=chat_id, db=db)
+        return ai_messages
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Cannot retrieve AI responses: {str(e)}"
+        )
+
+@router.get("/list/human-message/{chat_id}", response_model=List[ChatHumanResponse])
+def get_chat_human_messages(
+    chat_id: str, 
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
+):
+    try: 
+        human_messages = get_user_chat_human_messages_by_chat_id(chat_id=chat_id, db=db)
+        return human_messages
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Cannot retrieve human messages: {str(e)}"
         )

@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean, Float
+from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean, Float, Integer
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -41,6 +41,8 @@ class ChatModel(Base):
 
     user = relationship("UserModel", back_populates="chat")
     document = relationship("DocumentModel", back_populates="chat")
+    human_message = relationship("HumanMessagesModel", back_populates="chat")
+    ai_message = relationship("AIMessagesModel", back_populates="chat")
 
 class DocumentModel(Base):
     __tablename__ = "documents"
@@ -51,3 +53,38 @@ class DocumentModel(Base):
     created_at = Column(DateTime, default=datetime.datetime.now())
 
     chat = relationship("ChatModel", back_populates="document")
+
+class HumanMessagesModel(Base):
+    __tablename__ = "human_messages"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    chat_id = Column(String, ForeignKey("chats.id"))
+    content = Column(String)
+    created_at = Column(DateTime, default=datetime.datetime.now())
+
+    chat = relationship("ChatModel", back_populates="human_message")
+    retrieved_document = relationship("RetrievedDocumentsModel", back_populates="human_message")
+
+class AIMessagesModel(Base):
+    __tablename__ = "ai_messages"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    chat_id = Column(String, ForeignKey("chats.id"))
+    content = Column(String)
+    created_at = Column(DateTime, default=datetime.datetime.now())
+
+    chat = relationship("ChatModel", back_populates="ai_message")
+
+class RetrievedDocumentsModel(Base):
+    __tablename__ = "retrieved_documents"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    id_from_vectorestore = Column(String, unique=True)
+    human_message_id = Column(String, ForeignKey("human_messages.id"))
+    content = Column(String)
+    file_type = Column(String, nullable=True)
+    page = Column(Integer, nullable=True)
+    page_label = Column(String, nullable=True)
+    title = Column(String, nullable=True)
+    upload_time = Column(String, nullable=True)
+    score = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.now())
+
+    human_message = relationship("HumanMessagesModel", back_populates="retrieved_document")
