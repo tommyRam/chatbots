@@ -17,7 +17,7 @@ from .utils.formatters import (
     reciprocal_rank_fusion, 
     format_qa_pair)
 
-from .schemas import ChatResponse
+from .schemas import ChatMessageResponse
 from .utils.prompts import prompts
 
 _ = load_dotenv(find_dotenv())
@@ -44,12 +44,12 @@ async def simple_RAG(
             {"context": formatted_relevant_docs_into_one_long_string, "question": question}
         )
 
-        response = ChatResponse(documents=relevant_docs_contents, chat_response=chat_response)
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=chat_response)
         return response 
     except FileNotFoundError as e:
         raise FileNotFoundError(e)
     except Exception as exception:
-        print(f"An error was occured: {exception}")
+        print(f"An error was occured on simple_RAG_service: {exception}")
         raise
 
 async def multi_query_RAG(
@@ -84,7 +84,7 @@ async def multi_query_RAG(
             | StrOutputParser()
         )
         chat_response = final_multi_query_rag_chain.invoke({"context": formatted_relevant_docs_into_one_long_string,"question": question})
-        response = ChatResponse(documents=relevant_docs_contents, chat_response=chat_response)
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=chat_response)
         return response
     except Exception as e:
         print(f"An error was occured: {e}")
@@ -128,7 +128,7 @@ async def fusion_RAG(
         )
 
         chat_response = final_fusion_rag_chain.invoke({"context": formatted_relevant_docs_into_one_long_string, "question": question})
-        response = ChatResponse(documents=relevant_docs_contents, chat_response=chat_response)
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=chat_response)
         return response
     except Exception as e:
         print(f"An error was occured: {e}")
@@ -179,7 +179,7 @@ async def decomposition_RAG(
             q_a_pair = format_qa_pair(q, answer)
             q_a_pairs = q_a_pairs + "\n ---- \n" + q_a_pair
         
-        response = ChatResponse(documents=documents_used, chat_response=answer)
+        response = ChatMessageResponse(documents=documents_used, chat_response=answer)
         return response
     except Exception as e:
         print(f"An error was occured: {e}")

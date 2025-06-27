@@ -40,8 +40,7 @@ async def create_chat(
     db: orm.Session = Depends(get_db)
 ):
     try:
-        # here we will consider only the first files because the frontend only send one file(for now)
-        uploaded_drive_file_metadata = upload_file_to_drive_folder(uploaded_files.filename)
+        uploaded_drive_file_metadata = await upload_file_to_drive_folder(uploaded_files)
         if not upload_file_to_drive_folder:
             raise FileNotFoundError("Error when uploading file into drive!")
         

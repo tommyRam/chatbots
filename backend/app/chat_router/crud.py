@@ -39,13 +39,19 @@ def add_human_message(human_message: HumanMessagesModel, db: orm.Session):
     db.commit()
     db.refresh(human_message)
 
+def get_latest_human_messages_by_chat_id(chat_id: str, db: orm.Session):
+    return db.query(HumanMessagesModel).filter(HumanMessagesModel.chat_id == chat_id).order_by(HumanMessagesModel.created_at.desc()).first()
+
 def get_human_messages_by_chat_id(chat_id: str, db: orm.Session):
-    return db.query(HumanMessagesModel).filter(HumanMessagesModel.chat_id == chat_id).order_by(HumanMessagesModel.created_at.desc()).all
+    return db.query(HumanMessagesModel).filter(HumanMessagesModel.chat_id == chat_id).order_by(HumanMessagesModel.created_at.desc()).all()
 
 def add_ai_message(ai_message: AIMessagesModel, db: orm.Session):
     db.add(ai_message)
     db.commit()
     db.refresh(ai_message)
+
+def get_latest_ai_messages_by_chat_id(chat_id: str, db: orm.Session):
+    return db.query(AIMessagesModel).filter(AIMessagesModel.chat_id == chat_id).order_by(AIMessagesModel.created_at.desc()).first()
 
 def get_ai_messages_by_chat_id(chat_id: str, db: orm.Session):
     return db.query(AIMessagesModel).filter(AIMessagesModel.chat_id == chat_id).order_by(AIMessagesModel.created_at.desc()).all()
