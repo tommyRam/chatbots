@@ -13,7 +13,7 @@ interface ChatContextType {
     handleChangeCurrentChat: (newChat: ChatSchema) => void;
     removeCurrentChat: () => void;
     createChat: (formData: FormData, accessToken: string) => Promise<ChatSchema>,
-    sendMessage: (message: string, accessToken: string) => Promise<MessageResponse>
+    sendMessage: (message: string, chatId: string, accessToken: string) => Promise<MessageResponse>
     loadChats: (userId: string, accessToken: string) => Promise<ChatSchema[]>
 }
 
@@ -37,8 +37,10 @@ export default function ChatProvider (
             loadChats(user_data.id, accessToken);
         }
 
-        const currentChatFromLocalStorage = JSON.parse(localStorage.getItem("currentChat") || "");
-        if(currentChatFromLocalStorage !== ""){
+        const currentChat = localStorage.getItem("currentChat");
+
+        if (currentChat) {
+            const currentChatFromLocalStorage = JSON.parse(currentChat);
             handleChangeCurrentChat(currentChatFromLocalStorage);
         }
     }, []);
@@ -71,9 +73,9 @@ export default function ChatProvider (
         }
     }
 
-    const sendMessage = async (message: string, accessToken: string): Promise<MessageResponse> => {
+    const sendMessage = async (message: string, chatId: string, accessToken: string): Promise<MessageResponse> => {
         try {
-            const newMessageResponse: BackendMessageResponse = await sendUserInput(message, accessToken=accessToken);
+            const newMessageResponse: BackendMessageResponse = await sendUserInput(message, chatId, accessToken=accessToken);
             const newMessageResponseFormatted: MessageResponse = transformMessageResponse(newMessageResponse);
             return newMessageResponseFormatted;
         } catch (e) {
