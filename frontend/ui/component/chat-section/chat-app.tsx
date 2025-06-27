@@ -46,7 +46,7 @@ export default function Chat(
             }
 
             if(currentChat && currentChat.chatId){
-                const response: BackendMessageResponse = await sendUserInput(inputValue, currentChat.chatId,accessToken);
+                const response: BackendMessageResponse = await sendUserInput(inputValue, currentChat.chatId, accessToken);
                 const responseFormatted: MessageResponse = transformMessageResponse(response);
                 if(response.chat_response) {
                     setMessage(response.chat_response);

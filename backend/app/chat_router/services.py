@@ -7,8 +7,8 @@ from googleapiclient.errors import HttpError
 import io
 import sqlalchemy.orm as orm
 
-from .crud import get_chats_from_user_id
-from .schemas import ChatResponse
+from .crud import get_chats_from_user_id, get_ai_messages_by_chat_id, get_human_messages_by_chat_id
+from .schemas import ChatResponse, ChatAIMessageResponse, ChatHumanResponse
 from config import settings
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -79,3 +79,29 @@ def get_user_chats_by_user_id(user_id: str, db: orm.Session) -> List[ChatRespons
       for chat in chats
    ]
    return chats_formatted_schemas
+
+def get_user_chat_ai_messages_by_chat_id(chat_id: str, db: orm.Session) -> List[ChatAIMessageResponse]:
+   ai_messages = get_ai_messages_by_chat_id(chat_id=chat_id, db=db)
+   ai_messages_formatted_schemas = [
+      ChatAIMessageResponse(
+         id=ai_message.id, 
+         chat_id=ai_message.chat_id,
+         content=ai_message.content,
+         created_at=ai_message.created_at
+      )
+      for ai_message in ai_messages
+   ]
+   return ai_messages_formatted_schemas
+
+def get_user_chat_human_messages_by_chat_id(chat_id: str, db: orm.Session) -> List[ChatHumanResponse]:
+   human_messages = get_human_messages_by_chat_id(chat_id=chat_id, db=db)
+   human_messages_formatted_schemas = [
+      ChatHumanResponse(
+         id=human_message.id,
+         chat_id=human_message.chat_id,
+         content=human_message.content,
+         created_at=human_message.created_at
+      )
+      for human_message in human_messages
+   ]
+   return human_messages_formatted_schemas
