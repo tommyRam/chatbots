@@ -9,8 +9,6 @@ tomorrow:
         - loading (on login and register)
         - after sending the messages the new documents is not displayed
         - Display directly the human message after the submit.
-        - Error on reloading
-        - the created_at on db must be the current time of upload
 
 
 - Frontend:
