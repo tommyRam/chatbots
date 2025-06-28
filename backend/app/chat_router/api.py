@@ -6,7 +6,8 @@ from .services import (
     upload_file_to_drive_folder, 
     get_user_chats_by_user_id,
     get_user_chat_ai_messages_by_chat_id,
-    get_user_chat_human_messages_by_chat_id
+    get_user_chat_human_messages_by_chat_id,
+    get_retrieved_documents_by_human_message_id_from_db
 )
 from .schemas import (
     ChatResponse,
@@ -69,8 +70,10 @@ async def create_chat(
             document_id = chat_by_name.document_id
         )
     except Exception as e:
-        print(f"Error when creating chat: {str(e)}")
-        raise(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Cannot create the new chat"
+        )
     
 @router.get("/list/{user_id}", response_model=List[ChatResponse])
 async def get_user_chat_lists(
@@ -84,7 +87,7 @@ async def get_user_chat_lists(
     except Exception as e:
         print(f"Error when retrieving chats: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Cannot retrieve your chat lists: {str(e)}"
         )
     
@@ -99,7 +102,7 @@ def get_chat_ai_messages(
         return ai_messages
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Cannot retrieve AI responses: {str(e)}"
         )
 
@@ -114,6 +117,24 @@ def get_chat_human_messages(
         return human_messages
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Cannot retrieve human messages: {str(e)}"
+        )
+
+@router.get("/list/retrieved-documents/{human_message_id}")
+def get_retrieved_documents(
+    human_message_id: str, 
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
+):
+    try:
+        retrieved_documents = get_retrieved_documents_by_human_message_id_from_db(
+            human_message_id=human_message_id, 
+            db=db
+        )
+        return retrieved_documents
+    except Exception as e:
+         raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Cannot retrieve documents: {str(e)}"
         )

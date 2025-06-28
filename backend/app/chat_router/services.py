@@ -16,9 +16,10 @@ from .crud import (
    add_ai_message,
    get_latest_ai_messages_by_chat_id,
    add_human_message,
-   add_retrieved_document
+   add_retrieved_document,
+   get_retrieved_documents_by_human_message_id
 )
-from .schemas import ChatResponse, ChatAIMessageResponse, ChatHumanResponse
+from .schemas import ChatResponse, ChatAIMessageResponse, ChatHumanResponse, RetrievedDocumentsResponse
 from config import settings
 from models import (
    HumanMessagesModel,
@@ -104,6 +105,18 @@ def get_user_chats_by_user_id(user_id: str, db: orm.Session) -> List[ChatRespons
    ]
    return chats_formatted_schemas
 
+def add_ai_message_to_db(chat_id: str, content: str, db: orm.Session) -> AIMessagesModel:
+   try: 
+      ai_message = AIMessagesModel(
+         chat_id=chat_id,
+         content=content
+      )
+      add_ai_message(ai_message=ai_message, db=db)
+      latest_ai_message = get_latest_ai_messages_by_chat_id(chat_id=chat_id, db=db)
+      return latest_ai_message
+   except Exception as e:
+      raise Exception(f"{e}\nCan't upload ai message into database")
+
 def get_user_chat_ai_messages_by_chat_id(chat_id: str, db: orm.Session) -> List[ChatAIMessageResponse]:
    ai_messages = get_ai_messages_by_chat_id(chat_id=chat_id, db=db)
    ai_messages_formatted_schemas = [
@@ -117,24 +130,11 @@ def get_user_chat_ai_messages_by_chat_id(chat_id: str, db: orm.Session) -> List[
    ]
    return ai_messages_formatted_schemas
 
-def get_user_chat_human_messages_by_chat_id(chat_id: str, db: orm.Session) -> List[ChatHumanResponse]:
-   human_messages = get_human_messages_by_chat_id(chat_id=chat_id, db=db)
-   human_messages_formatted_schemas = [
-      ChatHumanResponse(
-         id=human_message.id,
-         chat_id=human_message.chat_id,
-         content=human_message.content,
-         created_at=human_message.created_at
-      )
-      for human_message in human_messages
-   ]
-   return human_messages_formatted_schemas
-
 def add_human_message_to_db(chat_id: str, content: str, db: orm.Session) -> HumanMessagesModel:
    try:
       human_message = HumanMessagesModel(
-         chat_id=chat_id,
-         content=content
+         chat_id = chat_id,
+         content = content
       )
       add_human_message(human_message=human_message, db=db)
       latest_human_message = get_latest_human_messages_by_chat_id(chat_id=chat_id, db=db)
@@ -142,17 +142,18 @@ def add_human_message_to_db(chat_id: str, content: str, db: orm.Session) -> Huma
    except Exception as e: 
       raise Exception(f"{e}\nCan't upload human message into database")
 
-def add_ai_message_to_db(chat_id: str, content: str, db: orm.Session) -> AIMessagesModel:
-   try: 
-      ai_message = AIMessagesModel(
-         chat_id=chat_id,
-         content=content
+def get_user_chat_human_messages_by_chat_id(chat_id: str, db: orm.Session) -> List[ChatHumanResponse]:
+   human_messages = get_human_messages_by_chat_id(chat_id=chat_id, db=db)
+   human_messages_formatted_schemas = [
+      ChatHumanResponse(
+         id = human_message.id,
+         chat_id = human_message.chat_id,
+         content = human_message.content,
+         created_at = human_message.created_at
       )
-      add_ai_message(ai_message=ai_message, db=db)
-      latest_ai_message = get_latest_ai_messages_by_chat_id(chat_id=chat_id, db=db)
-      return latest_ai_message
-   except Exception as e:
-      raise Exception(f"{e}\nCan't upload ai message into database")
+      for human_message in human_messages
+   ]
+   return human_messages_formatted_schemas
    
 def add_retrieved_documents_to_db(
       documents_from_vectorestore: List[DocumentSchema], 
@@ -177,4 +178,30 @@ def add_retrieved_documents_to_db(
          retrieved_documents.append(doc_model)
       return retrieved_documents
    except Exception as e: 
-      raise Exception(f"{e}\nCan't Upload retrieved documents to db")
+      raise e
+   
+def get_retrieved_documents_by_human_message_id_from_db(
+      human_message_id: str,
+      db: orm.Session
+) -> List[RetrievedDocumentsResponse]:
+   retrieved_documents_response: List[RetrievedDocumentsResponse] = []
+   try:
+      retrieved_documents = get_retrieved_documents_by_human_message_id(human_message_id=human_message_id, db=db)
+      for retrieved_document in retrieved_documents:
+         retrieved_document_formatted = RetrievedDocumentsResponse(
+            id = retrieved_document.id,
+            id_from_vectorestore = retrieved_document.id_from_vectorestore,
+            human_message_id = retrieved_document.human_message_id,
+            content = retrieved_document.content,
+            file_type = retrieved_document.file_type,
+            page = retrieved_document.page,
+            page_label = retrieved_document.page_label,
+            title = retrieved_document.title,
+            upload_time = retrieved_document.upload_time,
+            score = retrieved_document.score,
+            created_at = retrieved_document.created_at
+         )
+         retrieved_documents_response.append(retrieved_document_formatted)
+      return retrieved_documents_response
+   except Exception as e:
+      raise e
