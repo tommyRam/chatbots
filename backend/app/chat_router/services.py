@@ -7,6 +7,7 @@ from googleapiclient.errors import HttpError
 import io
 import sqlalchemy.orm as orm
 from fastapi import UploadFile
+from datetime import datetime
 
 from .crud import (
    get_chats_from_user_id,
@@ -110,7 +111,8 @@ def add_ai_message_to_db(chat_id: str, content: str, db: orm.Session) -> AIMessa
    try: 
       ai_message = AIMessagesModel(
          chat_id=chat_id,
-         content=content
+         content=content,
+         created_at=datetime.now()
       )
       add_ai_message(ai_message=ai_message, db=db)
       latest_ai_message = get_latest_ai_messages_by_chat_id(chat_id=chat_id, db=db)
@@ -144,8 +146,9 @@ def get_user_chat_latest_ai_message_by_chat_id_from_db(chat_id: str, db: orm.Ses
 def add_human_message_to_db(chat_id: str, content: str, db: orm.Session) -> HumanMessagesModel:
    try:
       human_message = HumanMessagesModel(
-         chat_id = chat_id,
-         content = content
+         chat_id=chat_id,
+         content=content,
+         created_at=datetime.now()
       )
       add_human_message(human_message=human_message, db=db)
       latest_human_message = get_latest_human_messages_by_chat_id(chat_id=chat_id, db=db)
@@ -157,10 +160,10 @@ def get_user_chat_human_messages_by_chat_id(chat_id: str, db: orm.Session) -> Li
    human_messages = get_human_messages_by_chat_id(chat_id=chat_id, db=db)
    human_messages_formatted_schemas = [
       ChatHumanResponse(
-         id = human_message.id,
-         chat_id = human_message.chat_id,
-         content = human_message.content,
-         created_at = human_message.created_at
+         id=human_message.id,
+         chat_id=human_message.chat_id,
+         content=human_message.content,
+         created_at=human_message.created_at
       )
       for human_message in human_messages
    ]
@@ -169,10 +172,10 @@ def get_user_chat_human_messages_by_chat_id(chat_id: str, db: orm.Session) -> Li
 def get_user_chat_latest_human_message_by_chat_id_from_db(chat_id: str, db: orm.Session) -> ChatHumanResponse:
    human_message = get_latest_human_messages_by_chat_id(chat_id=chat_id, db=db)
    human_message_formatted_schemas = ChatHumanResponse(
-         id = human_message.id,
-         chat_id = human_message.chat_id,
-         content = human_message.content,
-         created_at = human_message.created_at
+         id=human_message.id,
+         chat_id=human_message.chat_id,
+         content=human_message.content,
+         created_at=human_message.created_at
       )
    return human_message_formatted_schemas
    
@@ -185,15 +188,16 @@ def add_retrieved_documents_to_db(
    try:
       for doc in documents_from_vectorestore:
          doc_model = RetrievedDocumentsModel(
-            id_from_vectorestore = doc.id,
-            human_message_id = human_message_id,
-            content = doc.content,
-            file_type = doc.file_type,
-            page = doc.page,
-            page_label = doc.page_label,
-            title = doc.title,
-            upload_time = doc.upload_time,
-            score = doc.score
+            id_from_vectorestore=doc.id,
+            human_message_id=human_message_id,
+            content=doc.content,
+            file_type=doc.file_type,
+            page=doc.page,
+            page_label=doc.page_label,
+            title=doc.title,
+            upload_time=doc.upload_time,
+            score=doc.score,
+            created_at=datetime.now()
          )
          add_retrieved_document(retrieved_document=doc_model, db=db)
          retrieved_documents.append(doc_model)
@@ -210,17 +214,17 @@ def get_retrieved_documents_by_human_message_id_from_db(
       retrieved_documents = get_retrieved_documents_by_human_message_id(human_message_id=human_message_id, db=db)
       for retrieved_document in retrieved_documents:
          retrieved_document_formatted = RetrievedDocumentsResponse(
-            id = retrieved_document.id,
-            id_from_vectorestore = retrieved_document.id_from_vectorestore,
-            human_message_id = retrieved_document.human_message_id,
-            content = retrieved_document.content,
-            file_type = retrieved_document.file_type,
-            page = retrieved_document.page,
-            page_label = retrieved_document.page_label,
-            title = retrieved_document.title,
-            upload_time = retrieved_document.upload_time,
-            score = retrieved_document.score,
-            created_at = retrieved_document.created_at
+            id=retrieved_document.id,
+            id_from_vectorestore=retrieved_document.id_from_vectorestore,
+            human_message_id=retrieved_document.human_message_id,
+            content=retrieved_document.content,
+            file_type=retrieved_document.file_type,
+            page=retrieved_document.page,
+            page_label=retrieved_document.page_label,
+            title=retrieved_document.title,
+            upload_time=retrieved_document.upload_time,
+            score=retrieved_document.score,
+            created_at=retrieved_document.created_at
          )
          retrieved_documents_response.append(retrieved_document_formatted)
       return retrieved_documents_response

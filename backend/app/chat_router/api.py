@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, Depends, Form, File, HTTPException, status
 import sqlalchemy.orm as orm
 from typing import List
+from datetime import datetime
 
 from .services import (
     upload_file_to_drive_folder, 
@@ -49,16 +50,18 @@ async def create_chat(
             raise FileNotFoundError("Error when uploading file into drive!")
         
         new_document = DocumentModel(
-            document_name = uploaded_drive_file_metadata["file_name"],
-            document_drive_id = uploaded_drive_file_metadata["file_id"],
-            document_size = uploaded_files.size
+            document_name=uploaded_drive_file_metadata["file_name"],
+            document_drive_id=uploaded_drive_file_metadata["file_id"],
+            document_size=uploaded_files.size,
+            created_at=datetime.now()
         )
         add_document(document=new_document, db=db)
         document_by_drive_id = get_document_by_drive_id(uploaded_drive_file_metadata["file_id"], db=db)
         new_chat = ChatModel(
-            user_id = user_id,
-            document_id = document_by_drive_id.id,
-            chat_name = chat_name
+            user_id=user_id,
+            document_id=document_by_drive_id.id,
+            chat_name=chat_name,
+            created_at=datetime.now()
         )
         add_chat(chat=new_chat, db=db)
         chat_by_name = get_chat_by_chat_name(chat_name=chat_name, db=db)
@@ -67,10 +70,10 @@ async def create_chat(
         upload_data_to_vectorestore(uploaded_files=uploaded_files, namespace=chat_by_name.id)
         
         return ChatResponse(
-            chat_id = chat_by_name.id,
-            user_id = user_id,
-            chat_name = chat_by_name.chat_name,
-            document_id = chat_by_name.document_id
+            chat_id=chat_by_name.id,
+            user_id=user_id,
+            chat_name=chat_by_name.chat_name,
+            document_id=chat_by_name.document_id
         )
     except Exception as e:
         raise HTTPException(
