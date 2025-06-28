@@ -13,6 +13,7 @@ from .crud import (
    get_ai_messages_by_chat_id, 
    get_human_messages_by_chat_id,
    get_latest_human_messages_by_chat_id,
+   get_latest_ai_messages_by_chat_id,
    add_ai_message,
    get_latest_ai_messages_by_chat_id,
    add_human_message,
@@ -130,6 +131,16 @@ def get_user_chat_ai_messages_by_chat_id(chat_id: str, db: orm.Session) -> List[
    ]
    return ai_messages_formatted_schemas
 
+def get_user_chat_latest_ai_message_by_chat_id_from_db(chat_id: str, db: orm.Session) -> ChatAIMessageResponse:
+   latest_ai_message = get_latest_ai_messages_by_chat_id(chat_id=chat_id, db=db)
+   latest_ai_message_formatted_schemas = ChatAIMessageResponse(
+         id=latest_ai_message.id, 
+         chat_id=latest_ai_message.chat_id,
+         content=latest_ai_message.content,
+         created_at=latest_ai_message.created_at
+      )
+   return latest_ai_message_formatted_schemas
+
 def add_human_message_to_db(chat_id: str, content: str, db: orm.Session) -> HumanMessagesModel:
    try:
       human_message = HumanMessagesModel(
@@ -154,6 +165,16 @@ def get_user_chat_human_messages_by_chat_id(chat_id: str, db: orm.Session) -> Li
       for human_message in human_messages
    ]
    return human_messages_formatted_schemas
+
+def get_user_chat_latest_human_message_by_chat_id_from_db(chat_id: str, db: orm.Session) -> ChatHumanResponse:
+   human_message = get_latest_human_messages_by_chat_id(chat_id=chat_id, db=db)
+   human_message_formatted_schemas = ChatHumanResponse(
+         id = human_message.id,
+         chat_id = human_message.chat_id,
+         content = human_message.content,
+         created_at = human_message.created_at
+      )
+   return human_message_formatted_schemas
    
 def add_retrieved_documents_to_db(
       documents_from_vectorestore: List[DocumentSchema], 

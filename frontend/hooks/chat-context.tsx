@@ -1,20 +1,47 @@
 "use client";
 
-import { createNewChat, getUserChatList, sendUserInput } from "@/api/chat-api";
+import { 
+    createNewChat, 
+    getAIMessageFromChat, 
+    getHumanMessageFromChat, 
+    getUserChatList, 
+    sendUserInput,
+    getLatestAIMessageFromChat,
+    getLatestHumanMessageFromChat,
+    getRetrievedDocuments
+} from "@/api/chat-api";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { transformChatResponse, transformMessageResponse } from "@/utils/transformers";
+import { 
+    transfomAIMessageResponseSchema, 
+    transformChatResponse, 
+    transformMessageResponse, 
+    transfomHumanMessageResponseSchema ,
+    transformDocumentResponse
+} from "@/utils/transformers";
 
 interface ChatContextType {
     chats: ChatSchema[],
-    currentChat: ChatSchema | null,
-    handleAddAllChat: (chats: ChatSchema[]) => void;
+    aiMessages: AIMessageResponseSchema[],
+    humanMessages: HumanMessageResponseSchema[],
+    currentChat: ChatSchema | null;
+    currentHumanMessageWithRetrievedDocuments: HumanMessageWithRetrievedDocumentSchema | null;
     handleAddChat: (newChat: ChatSchema) => void;
+    handleAddAllChat: (chats: ChatSchema[]) => void;
+    handleAddAIMessage: (newAIMessage: AIMessageResponseSchema) => void;
+    handleAddAllAIMessages: (allAIMessages: AIMessageResponseSchema[]) => void;
+    handleAddHumanMessage: (newHumanMessage: HumanMessageResponseSchema) => void;
+    handleAddAllHumanMessages: (allHumanMessages: HumanMessageResponseSchema[]) => void;  
     handleChangeCurrentChat: (newChat: ChatSchema) => void;
     removeCurrentChat: () => void;
     createChat: (formData: FormData, accessToken: string) => Promise<ChatSchema>,
-    sendMessage: (message: string, chatId: string, accessToken: string) => Promise<MessageResponse>
-    loadChats: (userId: string, accessToken: string) => Promise<ChatSchema[]>
+    sendMessage: (message: string, chatId: string, accessToken: string) => Promise<MessageResponse>;
+    loadChats: (userId: string, accessToken: string) => Promise<ChatSchema[]>;
+    loadAIMessagesFromChat: (chatId: string, accessToken: string) => Promise<AIMessageResponseSchema[]>;
+    loadHumanMessagesFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema[]>;
+    loadLatestAIMessageFromChat: (chatId: string, accessToken: string) => Promise<AIMessageResponseSchema>;
+    loadLatestHumanMessageFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema>;
+    loadRetrievedDocumentsFromHumanMessageId: (humanMessage: HumanMessageResponseSchema, accessToken: string) => Promise<HumanMessageWithRetrievedDocumentSchema>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -23,7 +50,10 @@ export default function ChatProvider (
     { children } : { children : React.ReactNode }
 ) {
     const [chats, setChats] = useState<ChatSchema[]>([]);
+    const [aiMessages, setAIMessages] = useState<AIMessageResponseSchema[]>([]);
+    const [humanMessages, setHumanMessages] = useState<HumanMessageResponseSchema[]>([]);
     const [currentChat, setCurrentChat] = useState<ChatSchema | null>(null);
+    const [currentHumanMessageWithRetrievedDocuments, setCurrentHumanMessageWithRetrievedDocuments] = useState<HumanMessageWithRetrievedDocumentSchema | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -53,8 +83,28 @@ export default function ChatProvider (
         setChats(chats);
     }
 
+    const handleAddAIMessage = (newAIMessage: AIMessageResponseSchema): void => {
+        setAIMessages(prev => [...prev, newAIMessage]);
+    }
+
+    const handleAddAllAIMessages = (allAIMessages: AIMessageResponseSchema[]): void => {
+        setAIMessages(allAIMessages);
+    }
+
+    const handleAddHumanMessage = (newHumanMessage: HumanMessageResponseSchema): void => {
+        setHumanMessages(prev => [...prev, newHumanMessage]);
+    }
+
+    const handleAddAllHumanMessages = (allHumanMessages: HumanMessageResponseSchema[]): void => {
+        setHumanMessages(allHumanMessages);
+    }
+
     const handleChangeCurrentChat = (newChat: ChatSchema): void => {
         setCurrentChat(newChat);
+    }
+
+    const handleChangeCurrentHumanMessageWithRetrievedDocuments = (newcurrentHumanMessageWithRetrievedDocuments: HumanMessageWithRetrievedDocumentSchema): void => {
+        setCurrentHumanMessageWithRetrievedDocuments(newcurrentHumanMessageWithRetrievedDocuments);
     }
 
     const removeCurrentChat = (): void => {
@@ -69,7 +119,7 @@ export default function ChatProvider (
             handleAddChat(createdChatFormatted);
             return createdChatFormatted;
         } catch (e) {
-            throw new Error("Can't create new chat: " + JSON.stringify(e));
+            throw new Error("Can't create new chat: " + e);
         }
     }
 
@@ -79,7 +129,7 @@ export default function ChatProvider (
             const newMessageResponseFormatted: MessageResponse = transformMessageResponse(newMessageResponse);
             return newMessageResponseFormatted;
         } catch (e) {
-            throw new Error("Can't send message" + JSON.stringify(e));
+            throw new Error("Can't send message" + e);
         }
     }
 
@@ -90,20 +140,91 @@ export default function ChatProvider (
             handleAddAllChat(chatListFormatted);
             return chatListFormatted;
         } catch(e) {
-            throw new Error("Can't load user chat lists: " + JSON.stringify(e));
+            throw new Error("Can't load user chat lists: " + e);
+        }
+    }
+
+    const loadAIMessagesFromChat = async (chatId: string, accessToken: string): Promise<AIMessageResponseSchema[]> => {
+        try {
+            const aiMessageList: BackendAIMessageResponseSChema[] = await getAIMessageFromChat(chatId, accessToken);
+            const aiMessageFormatted: AIMessageResponseSchema[] = aiMessageList.map((value: BackendAIMessageResponseSChema) => transfomAIMessageResponseSchema(value));
+            handleAddAllAIMessages(aiMessageFormatted);
+            return aiMessageFormatted;
+        } catch(e) {
+            throw new Error("Can't load AI messages responses: " + e);
+        }
+    }
+
+    const loadHumanMessagesFromChat = async (chatId: string, accessToken: string): Promise<HumanMessageResponseSchema[]>  => {
+        try {
+            const humanMessageList: BackendHumanMessageResponseSChema[] = await getHumanMessageFromChat(chatId, accessToken);
+            const humanMessageFormatted: HumanMessageResponseSchema[] = humanMessageList.map((value: BackendHumanMessageResponseSChema) => transfomHumanMessageResponseSchema(value));
+            handleAddAllHumanMessages(humanMessageFormatted);
+            return humanMessageFormatted;
+        } catch(e) {
+            throw new Error("Can't load Human messages query: " + e);
+        }
+    }
+
+    const loadLatestAIMessageFromChat = async (chatId: string, accessToken: string): Promise<AIMessageResponseSchema> => {
+        try {
+            const latestAIMessage: BackendAIMessageResponseSChema = await getLatestAIMessageFromChat(chatId, accessToken);
+            const latestAIMessageFormatted: AIMessageResponseSchema = transfomAIMessageResponseSchema(latestAIMessage);
+            handleAddAIMessage(latestAIMessageFormatted);
+            return latestAIMessageFormatted;
+        } catch(e) {
+            throw new Error("Can't load latest ai response: " + e);
+        }
+    }
+
+    const loadLatestHumanMessageFromChat = async (chatId: string, accessToken: string): Promise<HumanMessageResponseSchema> => {
+        try {
+            const latestHumanMessage: BackendHumanMessageResponseSChema = await getLatestHumanMessageFromChat(chatId, accessToken);
+            const latestHumanMessageFormatted: HumanMessageResponseSchema = transfomHumanMessageResponseSchema(latestHumanMessage);
+            handleAddHumanMessage(latestHumanMessageFormatted);
+            return latestHumanMessageFormatted;
+        } catch(e) {
+            throw new Error("Can't load latest human message query: " + e);
+        }
+    }
+
+    const loadRetrievedDocumentsFromHumanMessageId = async (humanMessage: HumanMessageResponseSchema, accessToken: string): Promise<HumanMessageWithRetrievedDocumentSchema> => {
+        try {
+            const retrievedDocuments: BackendRetrievedDocumentResponse[] = await getRetrievedDocuments(humanMessage.id, accessToken);
+            const retrievedDocumentsFormatted: RetrievedDocumentResponse[] = retrievedDocuments.map((value: BackendRetrievedDocumentResponse) => transformDocumentResponse(value));
+            const humanMessageWithRetrievedDocument: HumanMessageWithRetrievedDocumentSchema = {
+                humanMessage:humanMessage,
+                documents:retrievedDocumentsFormatted
+            }
+            handleChangeCurrentHumanMessageWithRetrievedDocuments(humanMessageWithRetrievedDocument);
+            return humanMessageWithRetrievedDocument
+        } catch(e) {
+            throw new Error("Can't load retrieved documents from human message: " + e);
         }
     }
 
     const value = {
         chats,
+        aiMessages,
+        humanMessages,
         currentChat,
+        currentHumanMessageWithRetrievedDocuments,
         handleAddAllChat,
         handleAddChat,
+        handleAddAIMessage,
+        handleAddAllAIMessages,
+        handleAddHumanMessage,
+        handleAddAllHumanMessages,
         handleChangeCurrentChat,
         removeCurrentChat,
         createChat,
         sendMessage,
-        loadChats
+        loadChats,
+        loadAIMessagesFromChat,
+        loadHumanMessagesFromChat,
+        loadLatestAIMessageFromChat,
+        loadLatestHumanMessageFromChat,
+        loadRetrievedDocumentsFromHumanMessageId
     }
 
     return (

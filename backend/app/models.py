@@ -76,7 +76,7 @@ class AIMessagesModel(Base):
 class RetrievedDocumentsModel(Base):
     __tablename__ = "retrieved_documents"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
-    id_from_vectorestore = Column(String, unique=True)
+    id_from_vectorestore = Column(String)
     human_message_id = Column(String, ForeignKey("human_messages.id"))
     content = Column(String)
     file_type = Column(String, nullable=True)

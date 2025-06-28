@@ -10,25 +10,13 @@ import ChatMessages from "./chat-message";
 import { transformMessageResponse } from "@/utils/transformers";
 import { useChat } from "@/hooks/chat-context";
 
-interface ChatProps {
-    message: string;
-    setMessage: (newMessage: string) => void;
-    setDocuments: (newDocuments: DocMessageResponse[]) => void;
-}
-
-export default function Chat(
-    {
-        message,
-        setMessage, 
-        setDocuments
-    }: ChatProps
-) {
+export default function Chat() {
     const [parentWidth, setParentWidth] = useState(0);
     const [inputValue, setInputValue] = useState<string>("");
     const [isPending, setIsPending] = useState<boolean>(false);
     const router = useRouter();
-
-    const { currentChat } = useChat();
+    
+    const { currentChat, sendMessage, loadLatestAIMessageFromChat, loadLatestHumanMessageFromChat, loadRetrievedDocumentsFromHumanMessageId } = useChat();
 
     const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
@@ -46,11 +34,11 @@ export default function Chat(
             }
 
             if(currentChat && currentChat.chatId){
-                const response: BackendMessageResponse = await sendUserInput(inputValue, currentChat.chatId, accessToken);
-                const responseFormatted: MessageResponse = transformMessageResponse(response);
-                if(response.chat_response) {
-                    setMessage(response.chat_response);
-                    setDocuments(responseFormatted.documents);
+                const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken);
+                if(response.chatMessage) {
+                    const humanMessage = await loadLatestHumanMessageFromChat(currentChat.chatId, accessToken);
+                    await loadLatestAIMessageFromChat(currentChat.chatId, accessToken);
+                    await loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
                 }
             }else {
                 router.push("/auth/login");
@@ -64,12 +52,14 @@ export default function Chat(
     }
 
     return (
-        <div className="h-full flex flex-col justify-center">   
-            <ChatHeader />
-            <div className="flex-1 flex justify-center pt-0.5">
+        <div className="h-full w-full flex flex-col ">   
+            <div className="h-12">
+                <ChatHeader />
+            </div>
+            <div className="flex-1 flex justify-center pt-0.5 overflow-y-auto pretty-scrollbar-minimal">
                 <ChatMessages />
             </div>
-            <div className="w-[100%] h-28 flex justify-center items-center">
+            <div className="w-[100%] h-28 flex justify-center items-center ">
                 <ChatInput
                     inputValue={inputValue}
                     isPending={isPending}

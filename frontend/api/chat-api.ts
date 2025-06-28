@@ -90,3 +90,134 @@ export const getUserChatList = async (
         throw e;
     }
 }
+
+export const getAIMessageFromChat = async (
+    chatId: string,
+    accessToken: string,
+    endpoint: string = "/api/chat/list/ai-message/"
+): Promise<BackendAIMessageResponseSChema[]> => {
+    const AI_MESSAGE_LIST_API = API_URL + endpoint + chatId;
+    try {
+        const response = await fetch(
+            AI_MESSAGE_LIST_API,
+            {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            }
+        );
+        if(!response.ok){
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.detail);
+        }
+
+        return await response.json();
+    }catch(e: unknown) {
+        throw e;
+    }
+}
+
+export const getLatestAIMessageFromChat = async (
+    chatId: string,
+    accessToken: string,
+    endpoint: string = "/api/chat/latest/ai-message/"
+): Promise<BackendAIMessageResponseSChema> => {
+    const LATEST_AI_MESSAGE_API = API_URL + endpoint + chatId;
+        try {
+        const response = await fetch(
+            LATEST_AI_MESSAGE_API,
+            {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            }
+        );
+        if(!response.ok){
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.detail);
+        }
+
+        return await response.json();
+    }catch(e: unknown) {
+        throw e;
+    }
+}
+
+export const getHumanMessageFromChat = async (
+    chatId: string,
+    accessToken: string,
+    endpoint: string = "/api/chat/list/human-message/"
+): Promise<BackendHumanMessageResponseSChema[]> => {
+    const HUMAN_MESSAGE_LIST_API = API_URL + endpoint + chatId;
+    try {
+        const response = await fetch(
+            HUMAN_MESSAGE_LIST_API,
+            {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            }
+        );
+        if(!response.ok){
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.detail);
+        }
+
+        return await response.json();
+    }catch(e: unknown) {
+        throw e;
+    }
+}
+
+export const getLatestHumanMessageFromChat = async (
+    chatId: string,
+    accessToken: string,
+    endpoint: string = "/api/chat/latest/human-message/"
+): Promise<BackendHumanMessageResponseSChema> => {
+    const LATEST_HUMAN_MESSAGE_API = API_URL + endpoint + chatId;
+    try {
+        const response = await fetch(
+            LATEST_HUMAN_MESSAGE_API,
+            {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            }
+        );
+        if(!response.ok){
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.detail);
+        }
+
+        return await response.json();
+    }catch(e: unknown) {
+        throw e;
+    }
+}
+
+export const getRetrievedDocuments = async (
+    humanMessageId: string, 
+    accessToken: string,
+    endpoint: string = "/api/chat/list/retrieved-documents/"
+): Promise<BackendRetrievedDocumentResponse[]> => {
+        const RETRIEVED_DOC_API = API_URL + endpoint + humanMessageId;
+    try {
+        const response = await fetch(
+            RETRIEVED_DOC_API,
+            {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            }
+        );
+        if(!response.ok){
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.detail);
+        }
+
+        return await response.json();
+    }catch(e: unknown) {
+        throw e;
+    }
+}
+

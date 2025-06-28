@@ -24,7 +24,7 @@ export default function HeaderMain() {
     }, [username, setUsername])
 
     return (
-        <div className="flex items-center justify-between w-full h-14 bg-gradient-to-b bg-white px-7">
+        <div className="flex items-center justify-between w-full bg-gradient-to-b h-14 bg-white px-7 border-b-2 border-purple-800">
             <div></div>
            {
             currentChat && (
@@ -34,7 +34,7 @@ export default function HeaderMain() {
             )
            }
             <div 
-                className="flex item-center justify-between w-21 h-[70%]"    
+                className="flex item-center justify-between w-21 h-full"    
             >
                 <div className="flex items-center justify-center hover:bg-purple-300 hover:cursor-pointer w-9 h-9 rounded-md">
                     <MoreHorizontal />

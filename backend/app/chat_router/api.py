@@ -7,13 +7,16 @@ from .services import (
     get_user_chats_by_user_id,
     get_user_chat_ai_messages_by_chat_id,
     get_user_chat_human_messages_by_chat_id,
-    get_retrieved_documents_by_human_message_id_from_db
+    get_retrieved_documents_by_human_message_id_from_db,
+    get_user_chat_latest_human_message_by_chat_id_from_db,
+    get_user_chat_latest_ai_message_by_chat_id_from_db
 )
 from .schemas import (
     ChatResponse,
     GetChatListRequest,
     ChatAIMessageResponse,
-    ChatHumanResponse
+    ChatHumanResponse,
+    RetrievedDocumentsResponse
 )
 from .crud import (
     add_chat, 
@@ -106,6 +109,21 @@ def get_chat_ai_messages(
             detail=f"Cannot retrieve AI responses: {str(e)}"
         )
 
+@router.get("/latest/ai-message/{chat_id}", response_model=ChatAIMessageResponse)
+def get_latest_ai_message(
+    chat_id: str, 
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
+):
+    try:
+        latest_ai_message = get_user_chat_latest_ai_message_by_chat_id_from_db(chat_id=chat_id, db=db)
+        return latest_ai_message
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Cannot retrieve latest AI response: {str(e)}"
+        )
+
 @router.get("/list/human-message/{chat_id}", response_model=List[ChatHumanResponse])
 def get_chat_human_messages(
     chat_id: str, 
@@ -120,8 +138,23 @@ def get_chat_human_messages(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Cannot retrieve human messages: {str(e)}"
         )
+    
+@router.get("/latest/human-message/{chat_id}", response_model=ChatHumanResponse)
+def get_latest_human_message(
+    chat_id: str, 
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
+):
+    try:
+        human_message = get_user_chat_latest_human_message_by_chat_id_from_db(chat_id=chat_id, db=db)
+        return human_message
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Cannot retrieve latest human message: {str(e)}"
+        )     
 
-@router.get("/list/retrieved-documents/{human_message_id}")
+@router.get("/list/retrieved-documents/{human_message_id}", response_model=List[RetrievedDocumentsResponse])
 def get_retrieved_documents(
     human_message_id: str, 
     user: LoginUserRequest = Depends(current_user),
