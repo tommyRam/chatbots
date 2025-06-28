@@ -6,12 +6,20 @@ import { useRouter } from "next/navigation";
 import { Upload, Plus } from 'lucide-react';
 import Button from "@/ui/reusable_component/button";
 import { createNewChat } from "@/api/chat-api";
+import { transformChatResponse } from "@/utils/transformers";
+import { useChat } from "@/hooks/chat-context";
 
 export default function CreateChat() {
     const [chatName, setChatName] = useState<string>("");
     const [selectedFiles, setSelectedFiles] = useState<FileList>();
     const [isPending, setIsPending] = useState<boolean>(false);
+    const [creatingChatError, setCreatingChatError] = useState<string | null>(null);
     const router = useRouter();
+    const {
+        handleChangeCurrentChat,
+        setCurrentChatToNull,
+        loadChats
+    } = useChat();
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -30,8 +38,14 @@ export default function CreateChat() {
     const handleSubmit = async (e: FormEvent<HTMLElement>): Promise<void> => {
         e.preventDefault();
         setIsPending(true);
+        setCreatingChatError(null);
         try {
             const user_data = JSON.parse(localStorage.getItem("user_data") || "");
+
+            if(user_data === "" || user_data === null){
+                router.push("auth/login")
+            }
+
             const accessToken = localStorage.getItem("access_token");
             const formData = new FormData();
             formData.append("user_id", user_data.id);
@@ -45,15 +59,21 @@ export default function CreateChat() {
                 router.push("auth/login");
                 throw new Error("Expired credentials");
             }
-            const response = await createNewChat(formData, accessToken, "/api/chat/create");
-            
+            const newChat: BackendchatSchema = await createNewChat(formData, accessToken, "/api/chat/create");
+            const newChatFormatted: ChatSchema = transformChatResponse(newChat);
+            localStorage.setItem("currentChat", JSON.stringify(newChatFormatted));
+            handleChangeCurrentChat(newChatFormatted);
+            await loadChats(user_data.id, accessToken);
+            router.push(`/main/chat/${newChatFormatted.chatId}`);
         } catch(e){
-            console.log("" + JSON.stringify(e))
+            console.log(e)
+            localStorage.removeItem("currentChat");
+            setCurrentChatToNull();
+            setCreatingChatError(JSON.stringify(e));
         }finally {
             setIsPending(false);
         }
     }
-
     
     return (
         <div className="h-full flex justify-center items-center">
@@ -72,6 +92,7 @@ export default function CreateChat() {
                             </label>
                             <input
                                 id="chat_name"
+                                required={true}
                                 value={chatName}
                                 type="text"
                                 onChange={handleInputChange}
@@ -84,6 +105,7 @@ export default function CreateChat() {
                             <div className="relative w-[80%]">
                                 <input 
                                     id="document"
+                                    required={true}
                                     type="file"
                                     accept=".pdf,.txt,.docx, .doc"
                                     onChange={handleUploadFile}
@@ -96,13 +118,21 @@ export default function CreateChat() {
                                     </div>
                                 </div>
                             </div>
-                        </div>                 
+                        </div>
+
+                        {
+                            creatingChatError && (
+                                <div className="text-red-400 text-sm">{creatingChatError}</div>
+                            )
+                        }
+
                         <div className="py-5">
                             <Button 
                                 buttonName="Upload"
                                 actionName="Uploading..."
                                 isPending={isPending}
                                 style={"w-[80%]"}
+                                action={handleSubmit}
                             />
                         </div>
                     </form>

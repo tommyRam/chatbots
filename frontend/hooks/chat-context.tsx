@@ -43,6 +43,7 @@ interface ChatContextType {
     loadLatestAIMessageFromChat: (chatId: string, accessToken: string) => Promise<AIMessageResponseSchema>;
     loadLatestHumanMessageFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema>;
     loadRetrievedDocumentsFromHumanMessageId: (humanMessage: HumanMessageResponseSchema, accessToken: string) => Promise<HumanMessageWithRetrievedDocumentSchema>;
+    setCurrentHumanMessageWithRetrievedDocumentsToNull: () => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -110,6 +111,10 @@ export default function ChatProvider (
 
     const handleChangeCurrentHumanMessageWithRetrievedDocuments = (newcurrentHumanMessageWithRetrievedDocuments: HumanMessageWithRetrievedDocumentSchema): void => {
         setCurrentHumanMessageWithRetrievedDocuments(newcurrentHumanMessageWithRetrievedDocuments);
+    }
+
+    const setCurrentHumanMessageWithRetrievedDocumentsToNull = (): void => {
+        setCurrentHumanMessageWithRetrievedDocuments(null);
     }
 
     const removeCurrentChat = (): void => {
@@ -230,7 +235,8 @@ export default function ChatProvider (
         loadHumanMessagesFromChat,
         loadLatestAIMessageFromChat,
         loadLatestHumanMessageFromChat,
-        loadRetrievedDocumentsFromHumanMessageId
+        loadRetrievedDocumentsFromHumanMessageId,
+        setCurrentHumanMessageWithRetrievedDocumentsToNull
     }
 
     return (
