@@ -3,6 +3,15 @@ tomorrow:
   front: chat section UI
   backend: check expiration token in the backend not working well / db for conversation
 
+  Bugs: - When error on login
+        - upload button on creating chat doesn't work
+        - after creating the chat not redirect directly
+        - loading (on login and register)
+        - after sending the messages the new documents is not displayed
+        - Display directly the human message after the submit.
+        - Error on reloading
+        - the created_at on db must be the current time of upload
+
 
 - Frontend:
     - Creating chat (update sidebar, header, chat message) - logic done
