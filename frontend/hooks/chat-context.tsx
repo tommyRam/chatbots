@@ -33,6 +33,7 @@ interface ChatContextType {
     handleAddHumanMessage: (newHumanMessage: HumanMessageResponseSchema) => void;
     handleAddAllHumanMessages: (allHumanMessages: HumanMessageResponseSchema[]) => void;  
     handleChangeCurrentChat: (newChat: ChatSchema) => void;
+    setCurrentChatToNull: () => void;
     removeCurrentChat: () => void;
     createChat: (formData: FormData, accessToken: string) => Promise<ChatSchema>,
     sendMessage: (message: string, chatId: string, accessToken: string) => Promise<MessageResponse>;
@@ -101,6 +102,10 @@ export default function ChatProvider (
 
     const handleChangeCurrentChat = (newChat: ChatSchema): void => {
         setCurrentChat(newChat);
+    }
+
+    const setCurrentChatToNull = (): void => {
+        setCurrentChat(null);
     }
 
     const handleChangeCurrentHumanMessageWithRetrievedDocuments = (newcurrentHumanMessageWithRetrievedDocuments: HumanMessageWithRetrievedDocumentSchema): void => {
@@ -216,6 +221,7 @@ export default function ChatProvider (
         handleAddHumanMessage,
         handleAddAllHumanMessages,
         handleChangeCurrentChat,
+        setCurrentChatToNull,
         removeCurrentChat,
         createChat,
         sendMessage,

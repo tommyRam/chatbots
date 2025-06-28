@@ -12,7 +12,9 @@ export default function ChatMessages() {
         humanMessages,
         currentChat,
         loadAIMessagesFromChat,
-        loadHumanMessagesFromChat
+        loadHumanMessagesFromChat,
+        handleChangeCurrentChat,
+        setCurrentChatToNull
     } = useChat();
     const router = useRouter();
 
@@ -20,16 +22,37 @@ export default function ChatMessages() {
         const hanldleReload = async () => {
             const accessToken = localStorage.getItem("access_token");
             try {
-                if (!accessToken || accessToken === "" || currentChat === null) {
+                if (!accessToken || accessToken === "") {
                     throw new Error("Not authenticated");
                 }
 
-                await loadAIMessagesFromChat(currentChat.chatId, accessToken);
-                await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
+                var currentChatFormatted: ChatSchema | null = null;
+                if(currentChat == null) {
+                    const currentChatFromLocalStorage = localStorage.getItem("currentChat");
+
+                    if(currentChatFromLocalStorage)
+                        currentChatFormatted = JSON.parse(currentChatFromLocalStorage);
+
+                    if(currentChatFormatted)
+                        handleChangeCurrentChat(currentChatFormatted);
+                }
+
+                if(currentChatFormatted !== null) {
+                    await loadAIMessagesFromChat(currentChatFormatted.chatId, accessToken);
+                    await loadHumanMessagesFromChat(currentChatFormatted.chatId, accessToken);
+                } else if(currentChat !== null) {
+                    await loadAIMessagesFromChat(currentChat.chatId, accessToken);
+                    await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
+                }else {
+                    localStorage.removeItem("currentChat");
+                    setCurrentChatToNull();
+                    router.push("/main/chat/new");
+                }
+                
             }catch (e) {
                 clearLocalStorage();
                 router.push("/auth/login");
-                console.log("e");
+                console.log(e);
             }
         }
 

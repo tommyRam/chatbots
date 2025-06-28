@@ -6,23 +6,49 @@ import { useRouter } from "next/navigation";
 import { clearLocalStorage } from "@/utils/auth";
 
 export default function DocumentMain() {
-    const { currentChat, currentHumanMessageWithRetrievedDocuments, humanMessages, loadHumanMessagesFromChat, loadRetrievedDocumentsFromHumanMessageId } = useChat();
+    const { 
+        currentChat, 
+        currentHumanMessageWithRetrievedDocuments, 
+        humanMessages, 
+        loadHumanMessagesFromChat, 
+        handleChangeCurrentChat,
+        loadRetrievedDocumentsFromHumanMessageId,
+        setCurrentChatToNull
+    } = useChat();
     const router = useRouter();
 
     useEffect(() => {
         const handleReload = async () => {
             try {
                 const accessToken = localStorage.getItem("access_token");
-                if(currentChat === null || accessToken === null || accessToken === "") {
+                if(accessToken === null || accessToken === "") {
                     throw new Error("You're not authenticated");
                 }
 
-                // if(humanMessages.length === 0) {
-                    const humanMessageResponse = await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
-                    
-                    if(humanMessageResponse.length > 0)
-                        await loadRetrievedDocumentsFromHumanMessageId(humanMessageResponse[humanMessageResponse.length - 1], accessToken);
-                // }
+                var currentChatFormatted: ChatSchema | null = null;
+                var humanMessageResponse: HumanMessageResponseSchema[] = [];
+                if(currentChat == null) {
+                    const currentChatFromLocalStorage = localStorage.getItem("currentChat");
+
+                    if(currentChatFromLocalStorage)
+                        currentChatFormatted = JSON.parse(currentChatFromLocalStorage);
+
+                    if(currentChatFormatted)
+                        handleChangeCurrentChat(currentChatFormatted);
+                }
+
+                if(currentChatFormatted) {
+                    humanMessageResponse = await loadHumanMessagesFromChat(currentChatFormatted.chatId, accessToken);
+                } else if(currentChat) {
+                    humanMessageResponse = await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
+                } else {
+                    localStorage.removeItem("currentChat");
+                    setCurrentChatToNull();
+                    router.push("/main/chat/new");
+                }
+
+                if(humanMessageResponse.length > 0)
+                    await loadRetrievedDocumentsFromHumanMessageId(humanMessageResponse[humanMessageResponse.length - 1], accessToken);
             } catch(e) {
                 clearLocalStorage();
                 router.push("/auth/login");
