@@ -6,8 +6,15 @@ import { useRouter } from "next/navigation";
 import ProfileMenu from "@/ui/reusable_component/profile-menu";
 import { clearLocalStorage } from "@/utils/auth";
 import { Bot, MessageSquarePlus, MessageSquarePlusIcon, Sparkles } from "lucide-react";
+import HumanMessage from "@/ui/reusable_component/human-message";
+import AIMessage from "@/ui/reusable_component/ai-message";
 
-export default function ChatMessages() {
+interface ChatMessagesProps {
+  tempHumanMessage: string | null;
+  setTempHumanMessageToNull: () => void;
+}
+
+export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNull}: ChatMessagesProps) {
     const {
         aiMessages,
         humanMessages,
@@ -42,12 +49,15 @@ export default function ChatMessages() {
                 if(currentChatFormatted !== null) {
                     await loadAIMessagesFromChat(currentChatFormatted.chatId, accessToken);
                     await loadHumanMessagesFromChat(currentChatFormatted.chatId, accessToken);
+                    setTempHumanMessageToNull();
                 } else if(currentChat !== null) {
                     await loadAIMessagesFromChat(currentChat.chatId, accessToken);
                     await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
+                    setTempHumanMessageToNull();
                 }else {
                     localStorage.removeItem("currentChat");
                     setCurrentChatToNull();
+                    setTempHumanMessageToNull();
                     router.push("/main/chat/new");
                 }
                 
@@ -83,47 +93,11 @@ export default function ChatMessages() {
           {humanMessages.map((value, index) => (
             <div key={index} className="w-full">
               {/* Human Message */}
-              <div className="flex justify-end mb-4">
-                <div className="max-w-[85%] group">
-                  <div className="flex items-start justify-end mb-2">
-                    <div className="mr-3">
-                      <div className="text-xs text-purple-600 font-medium mb-1 text-right">You</div>
-                      <div 
-                        className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-2xl rounded-tr-md shadow-lg hover:shadow-xl transition-all duration-200  hover:cursor-pointer hover:from-purple-700 hover:to-purple-800"
-                        onClick={() => handleClickHumanMessage(value)}
-                      >
-                        <div className="font-medium leading-relaxed">
-                          {value.content}
-                        </div>
-                      </div>
-                    </div>
-                    <ProfileMenu username="John" style="w-8 h-8"/>
-                  </div>
-                </div>
-              </div>
+              <HumanMessage humanMessage={value} handleClickHumanMessage={handleClickHumanMessage} />
 
               {/* AI Response */}
               {aiMessages[index] && (
-                <div className="flex justify-start mb-6">
-                  <div className="max-w-[85%] group">
-                    <div className="flex items-start mb-2">
-                      <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full text-white mr-3 shadow-sm">
-                        <Bot className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-xs text-purple-600 font-medium mb-1 flex items-center">
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          AI Assistant
-                        </div>
-                        <div className="bg-white border border-purple-100 px-6 py-4 rounded-2xl rounded-tl-md shadow-sm hover:shadow-md transition-all duration-200">
-                          <div className="text-gray-800 leading-relaxed whitespace-pre-wrap">
-                            {aiMessages[index].content}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <AIMessage aiMessages={aiMessages} index={index} />
               )}
 
               {/* Separator line for better visual separation */}
@@ -134,6 +108,34 @@ export default function ChatMessages() {
               )}
             </div>
           ))}
+
+          {tempHumanMessage && (
+              <div className="w-full mb-52">
+                <div className="flex justify-end mb-4">
+                    <div className="max-w-[85%] group">
+                        <div className="flex items-start justify-end mb-2">
+                        <div className="mr-3">
+                            <div className="text-xs text-purple-600 font-medium mb-1 text-right">You</div>
+                            <div 
+                            className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-2xl rounded-tr-md shadow-lg hover:shadow-xl transition-all duration-200  hover:cursor-pointer hover:from-purple-700 hover:to-purple-800"
+                            >
+                            <div className="font-medium leading-relaxed">
+                                {tempHumanMessage}
+                            </div>
+                            </div>
+                        </div>
+                        <ProfileMenu username="John" style="w-8 h-8"/>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              </div>
+            )}
         </div>
       ) : (
         <div className="text-center py-12 text-gray-500 w-full h-full flex flex-col items-center justify-center">

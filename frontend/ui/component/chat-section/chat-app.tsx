@@ -8,10 +8,10 @@ import ChatMessages from "./chat-message";
 import { useChat } from "@/hooks/chat-context";
 
 export default function Chat() {
-    const [parentWidth, setParentWidth] = useState(0);
     const [inputValue, setInputValue] = useState<string>("");
     const [isPending, setIsPending] = useState<boolean>(false);
     const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(false);
+    const [tempHumanMessage, setTempHumanMessage] = useState<string | null>(null);
     const router = useRouter();
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     
@@ -24,17 +24,6 @@ export default function Chat() {
             setIsLoadingMessages(false);
         }
     }, [humanMessages.length, aiMessages.length]);
-
-    const scrollToBottom = () => {
-        if (messagesContainerRef.current) {
-            messagesContainerRef.current.scrollTo(
-                {
-                    top: messagesContainerRef.current.scrollHeight,
-                    behavior: "smooth"
-                }
-            )
-        }
-    };
 
     // Scroll to bottom when messages are loaded or updated (only after loading is complete)
     useEffect(() => {
@@ -49,14 +38,16 @@ export default function Chat() {
     }
 
     const handleSendQuery = async () => {
+        scrollToBottom();
+        setTempHumanMessage(inputValue);
         const accessToken = localStorage.getItem("access_token") || "";
         setIsPending(true);
         setIsLoadingMessages(true);
-        scrollToBottom();
-
+        
         try {
             if(accessToken === "") {
                 router.push("/auth/login");
+                setTempHumanMessageToNull();
                 throw new Error("Missing access token");
             }
 
@@ -67,6 +58,7 @@ export default function Chat() {
                     await loadLatestAIMessageFromChat(currentChat.chatId, accessToken);
                     await loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
                     setInputValue("");
+                    setTempHumanMessageToNull();
                 }
             }else {
                 router.push("/auth/login");
@@ -78,7 +70,23 @@ export default function Chat() {
             setIsPending(false);
             setIsLoadingMessages(false);
             setInputValue("");
+            setTempHumanMessageToNull();
         }
+    }
+
+    const scrollToBottom = () => {
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTo(
+                {
+                    top: messagesContainerRef.current.scrollHeight,
+                    behavior: "smooth"
+                }
+            )
+        }
+    };
+
+    const setTempHumanMessageToNull = (): void => {
+        setTempHumanMessage(null);
     }
 
     return (
@@ -90,7 +98,7 @@ export default function Chat() {
                 ref={messagesContainerRef}
                 className="flex-1 flex justify-center pt-0.5 overflow-y-auto pretty-scrollbar-minimal"
             >
-                <ChatMessages />
+                <ChatMessages tempHumanMessage={tempHumanMessage} setTempHumanMessageToNull={setTempHumanMessageToNull}/>
             </div>
             <div className="w-[100%] h-28 flex justify-center items-center ">
                 <ChatInput

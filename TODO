@@ -1,6 +1,6 @@
 tomorrow: 
   Refactoring
-  front: chat section UI / document section UI
+  front: scrolling up on new messages / add chat message header to make choices between rag technics
   backend: check expiration token in the backend not working well
 
   Bugs: - When error on login

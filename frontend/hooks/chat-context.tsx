@@ -209,6 +209,10 @@ export default function ChatProvider (
 
     const loadRetrievedDocumentsFromHumanMessageId = async (humanMessage: HumanMessageResponseSchema, accessToken: string): Promise<HumanMessageWithRetrievedDocumentSchema> => {
         try {
+            if(!humanMessage.id){
+                throw new Error("The id of the humman message is required before retrieving the related documents!")
+            }
+
             const retrievedDocuments: BackendRetrievedDocumentResponse[] = await getRetrievedDocuments(humanMessage.id, accessToken);
             const retrievedDocumentsFormatted: RetrievedDocumentResponse[] = retrievedDocuments.map((value: BackendRetrievedDocumentResponse) => transformDocumentResponse(value));
             const humanMessageWithRetrievedDocument: HumanMessageWithRetrievedDocumentSchema = {

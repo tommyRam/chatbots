@@ -70,10 +70,10 @@ interface BackendAIMessageResponseSChema {
 }
 
 interface HumanMessageResponseSchema {
-    id: string;
+    id?: string;
     ChatId: string;
     content: string;
-    createdAt: string;
+    createdAt?: string;
 }
 
 interface BackendHumanMessageResponseSChema {
