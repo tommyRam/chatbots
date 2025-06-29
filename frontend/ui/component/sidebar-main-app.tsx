@@ -18,9 +18,11 @@ export default function SideBarMain () {
     const router = useRouter();
     const pathname = usePathname();
 
-    if(pathname === "/main/chat/new") {
-        setCurrentHumanMessageWithRetrievedDocumentsToNull();
+    useEffect(() => {
+        if(pathname === "/main/chat/new") {
+            setCurrentHumanMessageWithRetrievedDocumentsToNull();
     }
+    }, [])
 
     const toogleSidebar = () => {
         setIsCollapsed(!isCollapsed);

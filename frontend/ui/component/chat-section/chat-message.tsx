@@ -15,7 +15,8 @@ export default function ChatMessages() {
         loadAIMessagesFromChat,
         loadHumanMessagesFromChat,
         handleChangeCurrentChat,
-        setCurrentChatToNull
+        setCurrentChatToNull,
+        loadRetrievedDocumentsFromHumanMessageId
     } = useChat();
     const router = useRouter();
 
@@ -60,6 +61,21 @@ export default function ChatMessages() {
         hanldleReload();
     }, [])
 
+    const handleClickHumanMessage = async (humanMessage: HumanMessageResponseSchema) => {
+      try {
+        const accessToken = localStorage.getItem("access_token");
+        if (!accessToken || accessToken === "") {
+            throw new Error("Not authenticated");
+        }
+
+        loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
+      } catch(e) {
+        clearLocalStorage();
+        router.push("/auth/login");
+        console.log(e);
+      }
+    }
+
  return (
     <div className="flex-1 flex flex-col items-center justify-start mx-[10%] h-full max-w-2xl px-2">
       {humanMessages.length > 0 ? (
@@ -72,13 +88,16 @@ export default function ChatMessages() {
                   <div className="flex items-start justify-end mb-2">
                     <div className="mr-3">
                       <div className="text-xs text-purple-600 font-medium mb-1 text-right">You</div>
-                      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-2xl rounded-tr-md shadow-lg hover:shadow-xl transition-all duration-200">
+                      <div 
+                        className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-2xl rounded-tr-md shadow-lg hover:shadow-xl transition-all duration-200  hover:cursor-pointer hover:from-purple-700 hover:to-purple-800"
+                        onClick={() => handleClickHumanMessage(value)}
+                      >
                         <div className="font-medium leading-relaxed">
                           {value.content}
                         </div>
                       </div>
                     </div>
-                    <ProfileMenu username="John" />
+                    <ProfileMenu username="John" style="w-8 h-8"/>
                   </div>
                 </div>
               </div>
