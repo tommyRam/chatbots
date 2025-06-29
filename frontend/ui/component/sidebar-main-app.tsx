@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronLeft, Menu, MessageCircleMoreIcon, MessageSquare, Plus, Search, TrashIcon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { ChevronLeft, Menu, MessageCircleMoreIcon, Plus, TrashIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useChat } from "@/hooks/chat-context";
 import { capitalizeFirstLetter } from "@/utils/transformers";
 
@@ -11,13 +11,18 @@ export default function SideBarMain () {
     const {
         chats,
         currentChat,
-        handleAddAllChat,
-        handleAddChat,
         handleChangeCurrentChat,
         removeCurrentChat,
-        loadChats
+        setCurrentHumanMessageWithRetrievedDocumentsToNull
     } = useChat();
     const router = useRouter();
+    const pathname = usePathname();
+
+    useEffect(() => {
+        if(pathname === "/main/chat/new") {
+            setCurrentHumanMessageWithRetrievedDocumentsToNull();
+    }
+    }, [])
 
     const toogleSidebar = () => {
         setIsCollapsed(!isCollapsed);
@@ -25,6 +30,7 @@ export default function SideBarMain () {
 
     const handleSetCurrentChat = (index: number): void => {
         handleChangeCurrentChat(chats[index]);
+        setCurrentHumanMessageWithRetrievedDocumentsToNull();
         localStorage.setItem("currentChat", JSON.stringify(chats[index]));
 
         router.push(`${chats[index].chatId}`);
@@ -32,6 +38,7 @@ export default function SideBarMain () {
 
     const handleCreateNewChat = (): void => {
         removeCurrentChat();
+        setCurrentHumanMessageWithRetrievedDocumentsToNull();
         localStorage.removeItem("currentChat");
 
         router.push("/main/chat/new");
@@ -118,7 +125,7 @@ export default function SideBarMain () {
                                                 key={value.chatId} 
                                                 className={`flex items-center justify-between my-2 py-1.5 px-1.5 hover:cursor-pointer rounded-lg ${currentChat?.chatId === value.chatId ? "bg-purple-900 hover:bg-purple-800" : "bg-white hover:bg-purple-50 "}`}
                                             >
-                                                <div className={`font-bold  ${currentChat?.chatId === value.chatId ? "text-white" : "text-gray-500"}`}>
+                                                <div className={`overflow-hidden font-bold  ${currentChat?.chatId === value.chatId ? "text-white" : "text-gray-500"}`}>
                                                     {capitalizeFirstLetter(value.chatName)}
                                                 </div>
                                                 <div className="flex items-center justify-center rounded-md hover:cursor-pointer hover:border-[0.5px] border-gray-600 w-7 h-7">

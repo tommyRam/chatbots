@@ -1,4 +1,3 @@
-import Button from "@/ui/reusable_component/button";
 import { Loader2, Send } from "lucide-react";
 import { ChangeEvent } from "react";
 
@@ -24,7 +23,7 @@ export default function ChatInput ({
     };
 
     return (
-        <div className="w-full h-full flex justify-center items-center p-4 ">
+        <div className="w-full h-full flex justify-center items-center p-4 pt-0 ">
             <div className="relative w-full max-w-2xl">
                 <textarea
                     id="query"

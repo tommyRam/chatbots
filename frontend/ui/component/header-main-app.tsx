@@ -24,17 +24,17 @@ export default function HeaderMain() {
     }, [username, setUsername])
 
     return (
-        <div className="flex items-center justify-between w-full h-14 bg-gradient-to-b bg-white px-7">
+        <div className="flex items-center justify-between w-full bg-gradient-to-b h-14 bg-white px-7 border-b-2 border-purple-800">
             <div></div>
            {
             currentChat && (
-                <div className="flex items-center bg-gray-200 rounded-3xl text-xs shadow-gray-300 shadow-inner h-[70%] text-purple-950 font-bold px-3.5">
+                <div className="flex items-center bg-gray-200 rounded-3xl text-2xs shadow-gray-300 shadow-inner h-[70%] text-gray-600 px-5">
                    {capitalizeFirstLetter(currentChat.chatName)}
                 </div>
             )
            }
             <div 
-                className="flex item-center justify-between w-21 h-[70%]"    
+                className="flex items-center justify-between w-21 h-full"    
             >
                 <div className="flex items-center justify-center hover:bg-purple-300 hover:cursor-pointer w-9 h-9 rounded-md">
                     <MoreHorizontal />
