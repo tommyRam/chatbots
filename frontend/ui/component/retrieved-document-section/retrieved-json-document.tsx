@@ -30,8 +30,9 @@ export default function RenderJSONDocument({doc, copyToClipBoard, copiedDoc}: Re
             )}
           </button>
         </div>
-        <div className="p-4">
-          <pre className="text-sm text-gray-800 overflow-x-auto bg-gray-50 p-3 rounded border">
+        
+        <div className="p-4 flex">
+          <pre className="text-sm text-gray-800 bg-gray-50 p-3 rounded border border-gray-600 whitespace-pre-wrap break-words max-h-64 overflow-y-auto">
             <code>{jsonString}</code>
           </pre>
         </div>

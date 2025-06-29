@@ -6,12 +6,6 @@ import { usePathname } from "next/navigation";
 import { useChat } from "@/hooks/chat-context";
 
 export default function NewChatMain() {
-    const pathname = usePathname();
-    const { setCurrentHumanMessageWithRetrievedDocumentsToNull } = useChat();
-
-    if(pathname === "/main/chat/new") {
-        setCurrentHumanMessageWithRetrievedDocumentsToNull();
-    }
 
     return (
           <ResizableLayout

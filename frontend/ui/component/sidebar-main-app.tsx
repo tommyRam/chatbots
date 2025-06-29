@@ -2,7 +2,7 @@
 
 import { ChevronLeft, Menu, MessageCircleMoreIcon, Plus, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useChat } from "@/hooks/chat-context";
 import { capitalizeFirstLetter } from "@/utils/transformers";
 
@@ -16,6 +16,11 @@ export default function SideBarMain () {
         setCurrentHumanMessageWithRetrievedDocumentsToNull
     } = useChat();
     const router = useRouter();
+    const pathname = usePathname();
+
+    if(pathname === "/main/chat/new") {
+        setCurrentHumanMessageWithRetrievedDocumentsToNull();
+    }
 
     const toogleSidebar = () => {
         setIsCollapsed(!isCollapsed);

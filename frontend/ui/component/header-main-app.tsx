@@ -28,13 +28,13 @@ export default function HeaderMain() {
             <div></div>
            {
             currentChat && (
-                <div className="flex items-center bg-gray-200 rounded-3xl text-xs shadow-gray-300 shadow-inner h-[70%] text-purple-950 font-bold px-3.5">
+                <div className="flex items-center bg-gray-200 rounded-3xl text-2xs shadow-gray-300 shadow-inner h-[70%] text-gray-600 px-5">
                    {capitalizeFirstLetter(currentChat.chatName)}
                 </div>
             )
            }
             <div 
-                className="flex item-center justify-between w-21 h-full"    
+                className="flex items-center justify-between w-21 h-full"    
             >
                 <div className="flex items-center justify-center hover:bg-purple-300 hover:cursor-pointer w-9 h-9 rounded-md">
                     <MoreHorizontal />

@@ -61,16 +61,8 @@ export default function DocBody() {
     }, []);
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-start mx-[3%] h-full max-w-2xl px-2">
-            {
-                currentHumanMessageWithRetrievedDocuments ? (
-                    <div className="w-full mb-5">
-                        <div className="text-xl font-bold text-gray-900"> Related question</div>
-                        <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm font-bold text-gray-600">{currentHumanMessageWithRetrievedDocuments?.humanMessage.content}</div>
-                    </div>
-                ) : (<div></div>)
-            }
-            <RetrievedDocuments documents={currentHumanMessageWithRetrievedDocuments?.documents} />
+        <div className="flex-1 flex flex-col items-center justify-start h-full px-2">
+            <RetrievedDocuments documents={currentHumanMessageWithRetrievedDocuments?.documents} humanMessage={currentHumanMessageWithRetrievedDocuments?.humanMessage}/>
         </div>
     )
 }
