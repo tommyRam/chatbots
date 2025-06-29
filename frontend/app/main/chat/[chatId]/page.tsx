@@ -1,7 +1,6 @@
-import DocumentMain from "@/ui/component/document-section-main-app";
+import DocumentMain from "@/ui/component/retrieved-document-section/document-section-main-app";
 import ResizableLayout from "@/ui/component/resizable-layout";
 import Chat from "@/ui/component/chat-section/chat-app";
-
 
 export default function ChatPage() {
     return (

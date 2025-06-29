@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, Menu, MessageCircleMoreIcon, Plus, TrashIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useChat } from "@/hooks/chat-context";
 import { capitalizeFirstLetter } from "@/utils/transformers";

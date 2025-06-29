@@ -14,7 +14,7 @@ type RegisterFormDataField = keyof RegisterFormData;
 
 export default function Register(){
     const [submittingError, setSubmittingError]= useState<string>("");
-    const [isPending, setStartTransistion] = useTransition();
+    const [isPending, setIsPending] = useState<boolean>(false);
     const {
         formData,
         errors,
@@ -26,18 +26,19 @@ export default function Register(){
 
     const router = useRouter();
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    const handleSubmit = async (e: FormEvent<HTMLElement>): Promise<void> => {
         e.preventDefault();
+        setIsPending(true);
         console.log("validate");
         console.log("formdata: " + JSON.stringify(formData));
 
         if(submittingError){
             setSubmittingError("");
+            setIsPending(false);
         }
 
         const isValidRegisterForm = validateRegisterForm();
         if (isValidRegisterForm){
-            startTransition(async () => {
                 try {
                     router.push("/main/chat/new");
                     const response = await register(formData);
@@ -51,8 +52,9 @@ export default function Register(){
                     localStorage.setItem("chatList", JSON.stringify(chatList));
                 } catch(e: unknown){
                     setSubmittingError("" + JSON.stringify(e));
-                }        
-            })
+                } finally {
+                    setIsPending(false);
+                }  
         }
     }
 
@@ -136,6 +138,7 @@ export default function Register(){
                                 style="w-full"
                                 actionName="Register..."
                                 isPending={isPending}
+                                action={handleSubmit}
                             />
                         </div>
                     </form>

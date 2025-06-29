@@ -19,6 +19,7 @@ import {
     transfomHumanMessageResponseSchema ,
     transformDocumentResponse
 } from "@/utils/transformers";
+import { clearLocalStorage } from "@/utils/auth";
 
 interface ChatContextType {
     chats: ChatSchema[],
@@ -59,21 +60,29 @@ export default function ChatProvider (
     const router = useRouter();
 
     useEffect(() => {
-        if (chats.length === 0){
-            const user_data = JSON.parse(localStorage.getItem("user_data") || "");
-            const accessToken = localStorage.getItem("access_token") || "";
+        try {
+            if (chats.length === 0){
+                const userDataString = localStorage.getItem("user_data");
+                const accessToken = localStorage.getItem("access_token");
 
-            if (user_data === "" || accessToken === ""){
-                router.push("auth/login");
+                if (userDataString === "" || userDataString === null || accessToken === null){
+                    throw new Error("User not authenticated")
+                }
+
+                const userDataFormatted = JSON.parse(userDataString);
+                loadChats(userDataFormatted.id, accessToken);
             }
-            loadChats(user_data.id, accessToken);
-        }
 
-        const currentChat = localStorage.getItem("currentChat");
+            const currentChat = localStorage.getItem("currentChat");
 
-        if (currentChat) {
-            const currentChatFromLocalStorage = JSON.parse(currentChat);
-            handleChangeCurrentChat(currentChatFromLocalStorage);
+            if (currentChat) {
+                const currentChatFromLocalStorage = JSON.parse(currentChat);
+                handleChangeCurrentChat(currentChatFromLocalStorage);
+            }
+        } catch(e) {
+            console.log(e);
+            clearLocalStorage();
+            router.push("/auth/login");
         }
     }, []);
 

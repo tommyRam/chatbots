@@ -4,8 +4,9 @@ import { useChat } from "@/hooks/chat-context";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { clearLocalStorage } from "@/utils/auth";
+import RetrievedDocuments from "./retrieved-documents";
 
-export default function DocumentMain() {
+export default function DocBody() {
     const { 
         currentChat, 
         currentHumanMessageWithRetrievedDocuments, 
@@ -60,36 +61,16 @@ export default function DocumentMain() {
     }, []);
 
     return (
-        <div className="w-full h-full mr-2. bg-white shadow-gray-700 inset-shadow-2xs inset-shadow-indigo-50">
-           {
-            currentHumanMessageWithRetrievedDocuments ? 
-                (
-                    <div className="flex flex-col items-center">
-                        <div className="flex-1 flex flex-col items-center">
-                            <div>Human query</div>
-                            <div>{currentHumanMessageWithRetrievedDocuments.humanMessage.content}</div>
-                            <div>{currentHumanMessageWithRetrievedDocuments.documents.length}</div>
-                        </div>
-                        <div className="flex-1 flex flex-col items-center">
-                            <div>Documents</div>
-                            <div className="flex-1 flex flex-col items-center">
-                                {
-                                    currentHumanMessageWithRetrievedDocuments.documents.map((value, index) => {
-                                        console.log(value);
-                                        return (
-                                            <div key={index} className="py-2.5">
-                                                {value.content}
-                                            </div>
-                                        )
-                                    })
-                                }
-                            </div>
-                        </div>
+        <div className="flex-1 flex flex-col items-center justify-start mx-[3%] h-full max-w-2xl px-2">
+            {
+                currentHumanMessageWithRetrievedDocuments ? (
+                    <div className="w-full mb-5">
+                        <div className="text-xl font-bold text-gray-900"> Related question</div>
+                        <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm font-bold text-gray-600">{currentHumanMessageWithRetrievedDocuments?.humanMessage.content}</div>
                     </div>
-                ) : (
-                    <div>No documents</div>
-                )
-           }
+                ) : (<div></div>)
+            }
+            <RetrievedDocuments documents={currentHumanMessageWithRetrievedDocuments?.documents} />
         </div>
     )
 }
