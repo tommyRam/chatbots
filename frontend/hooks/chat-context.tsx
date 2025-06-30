@@ -22,9 +22,9 @@ import {
 import { clearLocalStorage } from "@/utils/auth";
 
 interface ChatContextType {
-    chats: ChatSchema[],
-    aiMessages: AIMessageResponseSchema[],
-    humanMessages: HumanMessageResponseSchema[],
+    chats: ChatSchema[];
+    aiMessages: AIMessageResponseSchema[];
+    humanMessages: HumanMessageResponseSchema[];
     currentChat: ChatSchema | null;
     currentHumanMessageWithRetrievedDocuments: HumanMessageWithRetrievedDocumentSchema | null;
     handleAddChat: (newChat: ChatSchema) => void;

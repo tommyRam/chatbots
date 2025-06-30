@@ -13,7 +13,8 @@ export default function SideBarMain () {
         currentChat,
         handleChangeCurrentChat,
         removeCurrentChat,
-        setCurrentHumanMessageWithRetrievedDocumentsToNull
+        setCurrentHumanMessageWithRetrievedDocumentsToNull,
+        setCurrentChatToNull
     } = useChat();
     const router = useRouter();
     const pathname = usePathname();
@@ -21,7 +22,7 @@ export default function SideBarMain () {
     useEffect(() => {
         const currentChatFromStorage = localStorage.getItem("currentChat");
         if(currentChatFromStorage === null)
-            setCurrentHumanMessageWithRetrievedDocumentsToNull();
+            setCurrentChatToNull();
     }, [])
 
     const toogleSidebar = () => {

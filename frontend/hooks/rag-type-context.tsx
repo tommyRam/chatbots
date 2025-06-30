@@ -12,7 +12,7 @@ interface RagTypeContextType {
 const RagTechnicsContext = createContext<RagTypeContextType | undefined>(undefined);
 
 export default function RagProvider (
-    { children } : {children: React.ReactNode}
+    { children } : { children: React.ReactNode }
 ) { 
     const [allRagTechnics, setAllRagTechnics] = useState<RagTypeSchema[]>(allRagTechnicsConstant);
     const [currentRagTechnic, setCurrentRagTechnic] = useState<RagTypeSchema>(allRagTechnicsConstant[0]);
@@ -37,7 +37,7 @@ export default function RagProvider (
 export function useAllRagTechnics() {
     const context = useContext(RagTechnicsContext);
 
-    if(context === null){
+    if(context == null){
         throw new Error("useAllRagTechnics must be inside the RagProvider");
     }
 
