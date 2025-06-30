@@ -61,6 +61,7 @@ export default function Chat() {
                     setTempHumanMessageToNull();
                 }
             }else {
+                console.log("Not authenticated");
                 router.push("/auth/login");
             }            
         }catch (e){

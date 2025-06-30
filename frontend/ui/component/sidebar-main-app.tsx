@@ -19,9 +19,9 @@ export default function SideBarMain () {
     const pathname = usePathname();
 
     useEffect(() => {
-        if(pathname === "/main/chat/new") {
+        const currentChatFromStorage = localStorage.getItem("currentChat");
+        if(currentChatFromStorage === null)
             setCurrentHumanMessageWithRetrievedDocumentsToNull();
-    }
     }, [])
 
     const toogleSidebar = () => {

@@ -60,30 +60,32 @@ export default function ChatProvider (
     const router = useRouter();
 
     useEffect(() => {
-        try {
-            if (chats.length === 0){
-                const userDataString = localStorage.getItem("user_data");
-                const accessToken = localStorage.getItem("access_token");
+        setTimeout(() => {
+            try {
+                if (chats.length === 0){
+                    const userDataString = localStorage.getItem("user_data");
+                    const accessToken = localStorage.getItem("access_token");
 
-                if (userDataString === "" || userDataString === null || accessToken === null){
-                    throw new Error("User not authenticated")
+                    if (userDataString === "" || userDataString === null || accessToken === null){
+                        throw new Error("User not authenticated")
+                    }
+
+                    const userDataFormatted = JSON.parse(userDataString);
+                    loadChats(userDataFormatted.id, accessToken);
                 }
 
-                const userDataFormatted = JSON.parse(userDataString);
-                loadChats(userDataFormatted.id, accessToken);
-            }
+                const currentChat = localStorage.getItem("currentChat");
 
-            const currentChat = localStorage.getItem("currentChat");
-
-            if (currentChat) {
-                const currentChatFromLocalStorage = JSON.parse(currentChat);
-                handleChangeCurrentChat(currentChatFromLocalStorage);
+                if (currentChat) {
+                    const currentChatFromLocalStorage = JSON.parse(currentChat);
+                    handleChangeCurrentChat(currentChatFromLocalStorage);
+                }
+            } catch(e) {
+                console.log(e);
+                clearLocalStorage();
+                router.push("/auth/login");
             }
-        } catch(e) {
-            console.log(e);
-            clearLocalStorage();
-            router.push("/auth/login");
-        }
+        }, 500);
     }, []);
 
     const handleAddChat = (newChat: ChatSchema): void => {
