@@ -40,7 +40,8 @@ def create_user(user: RegisterUserRequest, db: orm.Session) -> UserModel:
         firstname = user.firstname,
         lastname = user.lastname, 
         hashed_password = hashed_password,
-        phone = user.phone
+        phone = user.phone,
+        created_at = datetime.now()
     )
     add_user(user_model, db)
     user_model_with_id = get_user_by_email(user.email, db)
@@ -70,7 +71,8 @@ def create_refresh_token(user_id: str, db: orm.Session) -> str:
     db_refresh_token = RefreshTokenModel(
         token=token,
         user_id=user_id,
-        expires_at=expires_at
+        expires_at=expires_at,
+        created_at=datetime.now()
     )
     
     add_refresh_token(db_refresh_token, db)

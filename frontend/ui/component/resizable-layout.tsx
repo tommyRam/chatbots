@@ -2,12 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export default function ResizableLayout(
-    children: {leftComponent: React.ReactNode, rightComponent: React.ReactNode}
-) {
+interface ResizableLayoutProps {
+    leftComponent: React.ReactNode;
+    rightComponent: React.ReactNode;
+}
+
+export default function ResizableLayout({ leftComponent, rightComponent }: ResizableLayoutProps) {
     const [leftWidth, setLeftWidth] = useState(50); // percentage
     const [isResizing, setIsResizing] = useState(false);
-    const containerRef = useRef(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         setIsResizing(true);
@@ -21,8 +24,8 @@ export default function ResizableLayout(
         const containerRect = container.getBoundingClientRect();
         const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
 
-        const contrainedWidth = Math.max(20, Math.min(80, newLeftWidth));
-        setLeftWidth(contrainedWidth)
+        const constrainedWidth = Math.max(20, Math.min(80, newLeftWidth));
+        setLeftWidth(constrainedWidth);
     }, [isResizing]);
 
     const handleMouseUp = useCallback(() => {
@@ -46,35 +49,28 @@ export default function ResizableLayout(
     }, [isResizing, handleMouseMove, handleMouseUp]);
 
     return (
-        <div
-            className="flex-1 flex"
-        >
-            <div 
-                ref={containerRef}
-                className="flex-1 flex justify-center overflow-hidden"
-            >
-                <div
-                    className="flex justify-center items-center"
-                    style={{ width: `${leftWidth}%` }}
-                    
-                >
-                    {children.leftComponent}
-                </div>
+        <div className="h-full">
+            <div ref={containerRef} className="h-full w-full flex">
                 <div 
-                    className="flex justify-center items-center w-0.5 h-[90%] mt-[2%] bg-gray-200 hover:bg-gray-700 cursor-col-resize transition-colors rounded-2xl"
+                    className="bg-white flex justify-center items-center" 
+                    style={{ width: `calc(${leftWidth}% - 4px)` }}
+                >
+                    {leftComponent}
+                </div>
+
+                <div 
+                    className="flex justify-center items-center w-1.5 h-full bg-transparent hover:bg-purple-300 cursor-col-resize transition-colors flex-shrink-0 group" 
                     onMouseDown={handleMouseDown}
                 >
-                    <div
-                        className="w-9 h-8 bg-purple-900"
-                    ></div>
+                    <div className="w-0.5 h-8 bg-purple-800 rounded-full group-hover:bg-gray-400 transition-colors"></div>
                 </div>
-                <div
-                    className="flex justify-center items-center"
-                    style={{width: `${100 - leftWidth}%`}}
+
+                <div 
+                    className="bg-white flex justify-center items-center flex-1"
                 >
-                    {children.rightComponent}
+                    {rightComponent}
                 </div>
             </div>
         </div>
-    )
+    );
 }

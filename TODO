@@ -1,35 +1,36 @@
 tomorrow: 
   Refactoring
-  front: chat section UI
-  backend: check expiration token in the backend not working well / db for conversation
+  front: scrolling up on new messages / add chat message header to make choices between rag technics
+  backend: check expiration token in the backend not working well
+
+  Bugs: - When error on login
+        - Display directly the human message after the submit.
 
 
 - Frontend:
-    - Creating chat (update sidebar, header, chat message) - logic done
     - route management
     - chatting and send factual data for response evaluations (AI as judge)
     - Choose the rag-endpoint
     - Design:
         - Sidebar (chat list, search from chat)
-        - Header (user, actual chat)
         - Chat section
         - Documents sections: (showing documents with metadata, showing documents in the selected documents directly)
     - automatically refresh access_token
 
-- Backend
+- Backend:
   - endpoint for evaluation (AI as a judge)
   - add another RAG techniques
   - Manage memory for agentic RAG
   - delete chat (delete document from drive, from pinecone and then from database)
   - add testing
 
-- Deployment
+- Deployment:
 
   - Dockerize backend
   - deploy frontend into vercel
   - apply ci/cd
 
-- Database
+- Database:
 
   - Migrate into postgres
   - In prod drive may be changed into (aws s3, google cloud storage, ...)

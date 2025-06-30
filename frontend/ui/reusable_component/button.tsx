@@ -1,10 +1,12 @@
+import { FormEvent } from "react";
+
 interface ButtonProps {
     buttonName: string;
     actionName: string;
     type?: "button" | "submit" | "reset";
     isPending?: boolean;
     style?: string;
-    action?: () => void;
+    action?: (e: FormEvent<HTMLElement>) => Promise<void>;
 }
 
 export default function Button({

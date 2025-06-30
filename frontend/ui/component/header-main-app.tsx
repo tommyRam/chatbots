@@ -5,42 +5,52 @@ import ProfileMenu from "../reusable_component/profile-menu";
 import { useEffect, useState } from "react";
 import { useChat } from "@/hooks/chat-context";
 import { capitalizeFirstLetter } from "@/utils/transformers";
+import { UserResponse } from "@/types/auth";
+import { clearLocalStorage } from "@/utils/auth";
+import { useRouter } from "next/navigation";
 
 export default function HeaderMain() {
-    const [username, setUsername] = useState<string>("");
+    const [user, setUser] = useState<UserResponse | null>(null);
     const {
         currentChat,
     } = useChat();
+    const router = useRouter();
 
     useEffect(() => {
-        const username = localStorage.getItem("user_data");
-        if(username){
-            setUsername(JSON.parse(username).username);
-        }
+        setTimeout(() => {
+            const userDataFromLocalsStorage: string | null = localStorage.getItem("user_data");
+            if(userDataFromLocalsStorage){
+                setUser(JSON.parse(userDataFromLocalsStorage));
+            } else {
+                console.log("Not authenticated")
+                clearLocalStorage();
+                router.push("/auth/login");
+            }
+        }, 500);
 
         () => {
-            setUsername("");
+            setUser(null);
         }
-    }, [username, setUsername])
+    }, [])
 
     return (
-        <div className="flex items-center justify-between w-full h-14 bg-gradient-to-b bg-white px-7">
+        <div className="flex items-center justify-between w-full bg-gradient-to-b h-14 bg-white px-7 border-b-2 border-purple-800">
             <div></div>
            {
             currentChat && (
-                <div className="flex items-center bg-gray-200 rounded-3xl text-xs shadow-gray-300 shadow-inner h-[70%] text-purple-950 font-bold px-3.5">
+                <div className="flex items-center bg-gray-200 rounded-3xl text-2xs shadow-gray-300 shadow-inner h-[70%] text-gray-600 px-5">
                    {capitalizeFirstLetter(currentChat.chatName)}
                 </div>
             )
            }
             <div 
-                className="flex item-center justify-between w-21 h-[70%]"    
+                className="flex items-center justify-between w-21 h-full"    
             >
                 <div className="flex items-center justify-center hover:bg-purple-300 hover:cursor-pointer w-9 h-9 rounded-md">
                     <MoreHorizontal />
                 </div>
                 <div className="flex items-center">
-                    <ProfileMenu username={username}/>
+                    <ProfileMenu userData={user}/>
                 </div>
             </div>
         </div>

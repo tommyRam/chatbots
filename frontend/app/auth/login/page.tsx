@@ -15,7 +15,7 @@ type LoginFormField = keyof LoginFormData
 
 export default function Login(){
     const [submittingError, setSubmittingError]= useState<string>("");
-    const [isPending, setStartTransistion] = useTransition();
+    const [isPending, setIsPending] = useState<boolean>(false);
     const router = useRouter();
     const {
         formData,
@@ -28,31 +28,33 @@ export default function Login(){
     } = useLoginForm();
 
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    const handleSubmit = async (e: FormEvent<HTMLElement>): Promise<void> => {
         e.preventDefault();
         if (submittingError) {
             setSubmittingError("");
         }
 
         const isValidForm = validateForm();
+        setIsPending(true);
         if (isValidForm){
-            startTransition(async () => {
-                try {
-                    router.push("/main/chat/new");
+            try {
+                const response = await login(formData);
+                const userData = await getCurrentUser(response.access_token);
 
-                    const response = await login(formData);
-                    const userData = await getCurrentUser(response.access_token);
+                localStorage.setItem("access_token", response.access_token);
+                localStorage.setItem("refresh_token", response.refresh_token);
+                localStorage.setItem("user_data", JSON.stringify(userData));
 
-                    localStorage.setItem("access_token", response.access_token);
-                    localStorage.setItem("refresh_token", response.refresh_token);
-                    localStorage.setItem("user_data", JSON.stringify(userData));
-
-                    const chatList = await getUserChatList(userData.id, response.access_token);
-                    localStorage.setItem("chatList", JSON.stringify(chatList));
-                } catch (e: unknown){
-                    setSubmittingError("" + e);
-                }
-            });
+                const chatList = await getUserChatList(userData.id, response.access_token);
+                localStorage.setItem("chatList", JSON.stringify(chatList));
+                router.push("/main/chat/new");
+            } catch (e: unknown){
+                setSubmittingError("" + e);
+            } finally {
+                setIsPending(false);
+            }
+        }else {
+            setIsPending(false);
         }
     }
 
@@ -113,6 +115,7 @@ export default function Login(){
                                 actionName="Login..." 
                                 style="w-full" 
                                 isPending={isPending}
+                                action={handleSubmit}
                             />
                         </div>
                     </form>
