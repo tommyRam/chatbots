@@ -36,8 +36,12 @@ async def simple_RAG(
         relevant_docs_contents = format_docs_list(relevant_docs)
         formatted_relevant_docs_into_one_long_string = format_docs(relevant_docs)    
 
+        enhanced_prompt = ChatPromptTemplate.from_messages([
+            ("system", prompts["formatting_instructions"]),
+            *prompt.messages  # Unpack existing messages
+        ])
         rag_chain = (
-            prompt | llm | StrOutputParser()
+            enhanced_prompt | llm | StrOutputParser()
         )
 
         chat_response = rag_chain.invoke(
@@ -77,7 +81,7 @@ async def multi_query_RAG(
         relevant_docs_contents = format_docs_list(relevant_docs)
         formatted_relevant_docs_into_one_long_string = format_docs(relevant_docs)
 
-        prompt = ChatPromptTemplate.from_template(prompts["rag_template"])
+        prompt = ChatPromptTemplate.from_template(prompts["formatting_instructions"] + "\n\n" + prompts["rag_template"])
         final_multi_query_rag_chain = (
             prompt
             | llm 
@@ -119,7 +123,7 @@ async def fusion_RAG(
         relevant_docs_contents = format_docs_list(relevant_docs)
         formatted_relevant_docs_into_one_long_string = format_docs(relevant_docs)
 
-        prompt = ChatPromptTemplate.from_template(prompts["rag_template"])
+        prompt = ChatPromptTemplate.from_template(prompts["formatting_instructions"] + "\n\n" + prompts["rag_template"])
 
         final_fusion_rag_chain = (
             prompt
@@ -152,7 +156,7 @@ async def decomposition_RAG(
         generated_questions = generate_queries_decomposition_chain.invoke({"question": question})
         generated_questions = generated_questions[2:]
 
-        decomposition_prompt = ChatPromptTemplate.from_template(prompts["decomposition_rag_template"])
+        decomposition_prompt = ChatPromptTemplate.from_template(prompts["formatting_instructions"] + "\n\n" + prompts["decomposition_rag_template"])
 
         vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
         
