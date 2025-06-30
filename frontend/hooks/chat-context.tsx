@@ -37,7 +37,7 @@ interface ChatContextType {
     setCurrentChatToNull: () => void;
     removeCurrentChat: () => void;
     createChat: (formData: FormData, accessToken: string) => Promise<ChatSchema>,
-    sendMessage: (message: string, chatId: string, accessToken: string) => Promise<MessageResponse>;
+    sendMessage: (message: string, chatId: string, accessToken: string, enpoint?: string) => Promise<MessageResponse>;
     loadChats: (userId: string, accessToken: string) => Promise<ChatSchema[]>;
     loadAIMessagesFromChat: (chatId: string, accessToken: string) => Promise<AIMessageResponseSchema[]>;
     loadHumanMessagesFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema[]>;
@@ -144,9 +144,9 @@ export default function ChatProvider (
         }
     }
 
-    const sendMessage = async (message: string, chatId: string, accessToken: string): Promise<MessageResponse> => {
+    const sendMessage = async (message: string, chatId: string, accessToken: string, endpoint?: string): Promise<MessageResponse> => {
         try {
-            const newMessageResponse: BackendMessageResponse = await sendUserInput(message, chatId, accessToken=accessToken);
+            const newMessageResponse: BackendMessageResponse = await sendUserInput(message, chatId, accessToken=accessToken, endpoint);
             const newMessageResponseFormatted: MessageResponse = transformMessageResponse(newMessageResponse);
             return newMessageResponseFormatted;
         } catch (e) {

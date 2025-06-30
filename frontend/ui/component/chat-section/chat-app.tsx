@@ -6,6 +6,7 @@ import ChatHeader from "./chat-header";
 import ChatInput from "./chat-input";
 import ChatMessages from "./chat-message";
 import { useChat } from "@/hooks/chat-context";
+import { useAllRagTechnics } from "@/hooks/rag-type-context";
 
 export default function Chat() {
     const [inputValue, setInputValue] = useState<string>("");
@@ -15,7 +16,19 @@ export default function Chat() {
     const router = useRouter();
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     
-    const { currentChat, sendMessage, loadLatestAIMessageFromChat, loadLatestHumanMessageFromChat, loadRetrievedDocumentsFromHumanMessageId, aiMessages, humanMessages } = useChat();
+    const { 
+        currentChat, 
+        sendMessage, 
+        loadLatestAIMessageFromChat, 
+        loadLatestHumanMessageFromChat, 
+        loadRetrievedDocumentsFromHumanMessageId, 
+        aiMessages, 
+        humanMessages 
+    } = useChat();
+
+    const {
+        currentRagTechnic
+    } = useAllRagTechnics();
 
     useEffect(() => {
         if (humanMessages.length === 0 && aiMessages.length === 0) {
@@ -52,7 +65,7 @@ export default function Chat() {
             }
 
             if(currentChat && currentChat.chatId){
-                const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken);
+                const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken, currentRagTechnic.enpoint);
                 if(response.chatMessage) {
                     const humanMessage = await loadLatestHumanMessageFromChat(currentChat.chatId, accessToken);
                     await loadLatestAIMessageFromChat(currentChat.chatId, accessToken);
