@@ -182,6 +182,7 @@ def get_user_chat_latest_human_message_by_chat_id_from_db(chat_id: str, db: orm.
 def add_retrieved_documents_to_db(
       documents_from_vectorestore: List[DocumentSchema], 
       human_message_id: str,
+      algorithm: str,
       db: orm.Session
 ) -> List[RetrievedDocumentsModel]:
    retrieved_documents: List[RetrievedDocumentsModel] = []
@@ -197,7 +198,8 @@ def add_retrieved_documents_to_db(
             title=doc.title,
             upload_time=doc.upload_time,
             score=doc.score,
-            created_at=datetime.now()
+            created_at=datetime.now(),
+            algorithm=algorithm
          )
          add_retrieved_document(retrieved_document=doc_model, db=db)
          retrieved_documents.append(doc_model)
@@ -224,7 +226,8 @@ def get_retrieved_documents_by_human_message_id_from_db(
             title=retrieved_document.title,
             upload_time=retrieved_document.upload_time,
             score=retrieved_document.score,
-            created_at=retrieved_document.created_at
+            created_at=retrieved_document.created_at,
+            algorithm=retrieved_document.algorithm
          )
          retrieved_documents_response.append(retrieved_document_formatted)
       return retrieved_documents_response

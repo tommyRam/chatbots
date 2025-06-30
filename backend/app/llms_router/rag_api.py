@@ -29,7 +29,7 @@ async def simple_rag(
         response = await simple_RAG(request.query, request.chat_id)
         human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query,db=db)
         add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
-        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, db=db)
+        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm="Simple RAG", db=db)
         return response
     except Exception as e:
         raise HTTPException(
@@ -40,10 +40,14 @@ async def simple_rag(
 @router.post("/multiQueryRAG", response_model=ChatMessageResponse)
 async def multi_query_rag(
     request: UserRequest,
-    user: LoginUserRequest = Depends(current_user)
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
     ):
     try: 
         response = await multi_query_RAG(request.query, request.chat_id)
+        human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query,db=db)
+        add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
+        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm="Multi Query RAG", db=db)        
         return response
     except Exception as e:
         raise HTTPException(
@@ -54,10 +58,14 @@ async def multi_query_rag(
 @router.post("/fusionRAG", response_model=ChatMessageResponse)
 async def fusion_rag(
     request: UserRequest,
-    user: LoginUserRequest = Depends(current_user)
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
     ):
     try: 
         response = await fusion_RAG(request.query, request.chat_id)
+        human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query,db=db)
+        add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
+        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm="Fusion RAG", db=db)        
         return response
     except Exception as e:
         raise HTTPException(
@@ -68,10 +76,14 @@ async def fusion_rag(
 @router.post("/decompositionRAG", response_model=ChatMessageResponse)
 async def decomposition_rag(
     request: UserRequest,
-    user: LoginUserRequest = Depends(current_user)
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
     ):
     try:
         response = await decomposition_RAG(request.query, request.chat_id)
+        human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query,db=db)
+        add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
+        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm="Decomposition RAG", db=db)
         return response
     except Exception as e:
          raise HTTPException(

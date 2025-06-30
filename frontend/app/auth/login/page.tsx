@@ -38,8 +38,6 @@ export default function Login(){
         setIsPending(true);
         if (isValidForm){
             try {
-                router.push("/main/chat/new");
-
                 const response = await login(formData);
                 const userData = await getCurrentUser(response.access_token);
 
@@ -49,6 +47,7 @@ export default function Login(){
 
                 const chatList = await getUserChatList(userData.id, response.access_token);
                 localStorage.setItem("chatList", JSON.stringify(chatList));
+                router.push("/main/chat/new");
             } catch (e: unknown){
                 setSubmittingError("" + e);
             } finally {

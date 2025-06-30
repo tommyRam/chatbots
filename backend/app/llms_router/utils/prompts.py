@@ -1,4 +1,12 @@
 prompts = {
+    "formatting_instructions": """
+        Format your response using clean markdown:
+        - Use ## for section headings
+        - Use **bold** for key terms
+        - Use - for bullet points
+        - Use ``` for code blocks
+        - Use proper paragraph spacing
+        """,
     "rag_template": """Answer the followng question based on this context
 
         {context}

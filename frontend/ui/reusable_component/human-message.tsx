@@ -21,7 +21,9 @@ export default function HumanMessage({humanMessage, handleClickHumanMessage}: Hu
                     </div>
                     </div>
                 </div>
-                <ProfileMenu username="John" style="w-8 h-8"/>
+                <div className={`flex justify-center items-center border-white border-2 rounded-4xl  bg-purple-800 text-white w-8 h-8`}>
+                    {"john".charAt(0).toUpperCase()}
+                </div>
                 </div>
             </div>
         </div>

@@ -86,5 +86,6 @@ class RetrievedDocumentsModel(Base):
     upload_time = Column(String, nullable=True)
     score = Column(String, nullable=True)
     created_at = Column(DateTime)
+    algorithm = Column(String)
 
     human_message = relationship("HumanMessagesModel", back_populates="retrieved_document")

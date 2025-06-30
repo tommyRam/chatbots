@@ -22,9 +22,9 @@ import {
 import { clearLocalStorage } from "@/utils/auth";
 
 interface ChatContextType {
-    chats: ChatSchema[],
-    aiMessages: AIMessageResponseSchema[],
-    humanMessages: HumanMessageResponseSchema[],
+    chats: ChatSchema[];
+    aiMessages: AIMessageResponseSchema[];
+    humanMessages: HumanMessageResponseSchema[];
     currentChat: ChatSchema | null;
     currentHumanMessageWithRetrievedDocuments: HumanMessageWithRetrievedDocumentSchema | null;
     handleAddChat: (newChat: ChatSchema) => void;
@@ -37,7 +37,7 @@ interface ChatContextType {
     setCurrentChatToNull: () => void;
     removeCurrentChat: () => void;
     createChat: (formData: FormData, accessToken: string) => Promise<ChatSchema>,
-    sendMessage: (message: string, chatId: string, accessToken: string) => Promise<MessageResponse>;
+    sendMessage: (message: string, chatId: string, accessToken: string, enpoint?: string) => Promise<MessageResponse>;
     loadChats: (userId: string, accessToken: string) => Promise<ChatSchema[]>;
     loadAIMessagesFromChat: (chatId: string, accessToken: string) => Promise<AIMessageResponseSchema[]>;
     loadHumanMessagesFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema[]>;
@@ -60,30 +60,32 @@ export default function ChatProvider (
     const router = useRouter();
 
     useEffect(() => {
-        try {
-            if (chats.length === 0){
-                const userDataString = localStorage.getItem("user_data");
-                const accessToken = localStorage.getItem("access_token");
+        setTimeout(() => {
+            try {
+                if (chats.length === 0){
+                    const userDataString = localStorage.getItem("user_data");
+                    const accessToken = localStorage.getItem("access_token");
 
-                if (userDataString === "" || userDataString === null || accessToken === null){
-                    throw new Error("User not authenticated")
+                    if (userDataString === "" || userDataString === null || accessToken === null){
+                        throw new Error("User not authenticated")
+                    }
+
+                    const userDataFormatted = JSON.parse(userDataString);
+                    loadChats(userDataFormatted.id, accessToken);
                 }
 
-                const userDataFormatted = JSON.parse(userDataString);
-                loadChats(userDataFormatted.id, accessToken);
-            }
+                const currentChat = localStorage.getItem("currentChat");
 
-            const currentChat = localStorage.getItem("currentChat");
-
-            if (currentChat) {
-                const currentChatFromLocalStorage = JSON.parse(currentChat);
-                handleChangeCurrentChat(currentChatFromLocalStorage);
+                if (currentChat) {
+                    const currentChatFromLocalStorage = JSON.parse(currentChat);
+                    handleChangeCurrentChat(currentChatFromLocalStorage);
+                }
+            } catch(e) {
+                console.log(e);
+                clearLocalStorage();
+                router.push("/auth/login");
             }
-        } catch(e) {
-            console.log(e);
-            clearLocalStorage();
-            router.push("/auth/login");
-        }
+        }, 500);
     }, []);
 
     const handleAddChat = (newChat: ChatSchema): void => {
@@ -142,9 +144,9 @@ export default function ChatProvider (
         }
     }
 
-    const sendMessage = async (message: string, chatId: string, accessToken: string): Promise<MessageResponse> => {
+    const sendMessage = async (message: string, chatId: string, accessToken: string, endpoint?: string): Promise<MessageResponse> => {
         try {
-            const newMessageResponse: BackendMessageResponse = await sendUserInput(message, chatId, accessToken=accessToken);
+            const newMessageResponse: BackendMessageResponse = await sendUserInput(message, chatId, accessToken=accessToken, endpoint);
             const newMessageResponseFormatted: MessageResponse = transformMessageResponse(newMessageResponse);
             return newMessageResponseFormatted;
         } catch (e) {

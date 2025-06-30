@@ -5,6 +5,7 @@ import React from "react";
 import { useState } from "react";
 import RenderJSONDocument from "./retrieved-json-document";
 import RenderViewDocument from "./render-view-document";
+import { useAllRagTechnics } from "@/hooks/rag-type-context";
 
 interface RetrievedDocumentsProps {
     documents: RetrievedDocumentResponse[] | undefined;
@@ -15,6 +16,7 @@ export default function RetrievedDocuments ({documents, humanMessage} : Retrieve
     const [viewMode, setViewMode] = useState<"plain" | "JSON">("plain");
     const [expandedDocs, setExpandedDocs] = useState<Set<string>>(new Set());
     const [copiedDoc, setCopiedDoc] = useState<string | null>(null);
+    const { currentRagTechnic } = useAllRagTechnics();
 
     const toggleExpanded = (docId: string) => {
         const newExpanded = new Set(expandedDocs);
@@ -65,7 +67,10 @@ export default function RetrievedDocuments ({documents, humanMessage} : Retrieve
         <div className="px-4 pt-3">
           <div className="flex flex-col justify-center mb-6">
             <div className="w-full mb-5">
-              <div className="text-xl font-bold text-gray-900 mb-3">Related Question</div>
+              <div className="flex flex-col justify-center">
+                <div className="text-xl font-bold text-gray-900  ">Related Question</div>
+                <div className="text-gray-600 text-sm mt-1 mb-3">Algorithm: <span className="text-gray-700 font-bold">{documents[0].algorithm}</span></div>
+              </div>
               <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm font-bold text-gray-600">
                 {humanMessage.content}
               </div>

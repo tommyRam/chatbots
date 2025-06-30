@@ -10,7 +10,8 @@ export function transformDocumentResponse(backendDoc: BackendRetrievedDocumentRe
         title: backendDoc.title,
         uploadTime: backendDoc.upload_time,
         score: backendDoc.score,
-        createdAt: backendDoc.created_at
+        createdAt: backendDoc.created_at,
+        algorithm: backendDoc.algorithm
     };
 }
 

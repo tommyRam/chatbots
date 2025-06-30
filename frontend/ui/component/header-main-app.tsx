@@ -5,23 +5,33 @@ import ProfileMenu from "../reusable_component/profile-menu";
 import { useEffect, useState } from "react";
 import { useChat } from "@/hooks/chat-context";
 import { capitalizeFirstLetter } from "@/utils/transformers";
+import { UserResponse } from "@/types/auth";
+import { clearLocalStorage } from "@/utils/auth";
+import { useRouter } from "next/navigation";
 
 export default function HeaderMain() {
-    const [username, setUsername] = useState<string>("");
+    const [user, setUser] = useState<UserResponse | null>(null);
     const {
         currentChat,
     } = useChat();
+    const router = useRouter();
 
     useEffect(() => {
-        const username = localStorage.getItem("user_data");
-        if(username){
-            setUsername(JSON.parse(username).username);
-        }
+        setTimeout(() => {
+            const userDataFromLocalsStorage: string | null = localStorage.getItem("user_data");
+            if(userDataFromLocalsStorage){
+                setUser(JSON.parse(userDataFromLocalsStorage));
+            } else {
+                console.log("Not authenticated")
+                clearLocalStorage();
+                router.push("/auth/login");
+            }
+        }, 500);
 
         () => {
-            setUsername("");
+            setUser(null);
         }
-    }, [username, setUsername])
+    }, [])
 
     return (
         <div className="flex items-center justify-between w-full bg-gradient-to-b h-14 bg-white px-7 border-b-2 border-purple-800">
@@ -40,7 +50,7 @@ export default function HeaderMain() {
                     <MoreHorizontal />
                 </div>
                 <div className="flex items-center">
-                    <ProfileMenu username={username}/>
+                    <ProfileMenu userData={user}/>
                 </div>
             </div>
         </div>
