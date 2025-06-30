@@ -40,7 +40,6 @@ export default function Register(){
         const isValidRegisterForm = validateRegisterForm();
         if (isValidRegisterForm){
                 try {
-                    router.push("/main/chat/new");
                     const response = await register(formData);
                     const userData = await getCurrentUser(response.access_token);
 
@@ -50,6 +49,7 @@ export default function Register(){
 
                     const chatList = await getUserChatList(userData.id, response.access_token);
                     localStorage.setItem("chatList", JSON.stringify(chatList));
+                    router.push("/main/chat/new");
                 } catch(e: unknown){
                     setSubmittingError("" + JSON.stringify(e));
                 } finally {

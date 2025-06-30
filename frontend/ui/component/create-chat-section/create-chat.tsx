@@ -14,6 +14,8 @@ export default function CreateChat() {
     const [selectedFiles, setSelectedFiles] = useState<FileList>();
     const [isPending, setIsPending] = useState<boolean>(false);
     const [creatingChatError, setCreatingChatError] = useState<string | null>(null);
+    const [showCreatingChatModal, setShowCreatingChatModal] = useState<boolean>(false);
+    const [isCreatingNewChatSuccess, setIsCreatingNewChatSuccess] = useState<boolean>(false);
     const router = useRouter();
     const {
         handleChangeCurrentChat,
@@ -64,12 +66,24 @@ export default function CreateChat() {
             localStorage.setItem("currentChat", JSON.stringify(newChatFormatted));
             handleChangeCurrentChat(newChatFormatted);
             await loadChats(user_data.id, accessToken);
-            router.push(`/main/chat/${newChatFormatted.chatId}`);
+
+            setIsCreatingNewChatSuccess(true);
+            setShowCreatingChatModal(true);
+
+            setTimeout(() => {
+                setShowCreatingChatModal(false);
+                router.push(`/main/chat/${newChatFormatted.chatId}`);
+            }, 3000);
         } catch(e){
             console.log(e)
             localStorage.removeItem("currentChat");
             setCurrentChatToNull();
             setCreatingChatError(JSON.stringify(e));
+
+            setIsCreatingNewChatSuccess(false);
+            setShowCreatingChatModal(true);
+
+            setTimeout(() => {setShowCreatingChatModal(false)}, 3000);
         }finally {
             setIsPending(false);
         }
@@ -77,6 +91,15 @@ export default function CreateChat() {
     
     return (
         <div className="h-full flex justify-center items-center">
+            {
+                showCreatingChatModal && (
+                    isCreatingNewChatSuccess ? (
+                        <div className="absolute flex items-center justify-center top-12 left-[50%] px-3.5 py-1.5 h-11 w-[21%] bg-green-400 text-white font-bold rounded-md">Chat created successfully!!!</div>
+                    ) : (
+                        <div className="absolute flex items-center justify-center top-12 left-[50%] px-3.5 py-1.5 h-11 w-[21%] bg-red-500 text-white font-bold rounded-md">Creating new chat failed!!!</div>
+                    )
+                )
+            }
             <div className="flex flex-col items-center max-w-lg w-[60%] h-[45%] rounded-lg bg-purple-50 p-2.5">
                 <div className="flex items-center justify-center text-2xl font-bold text-gray-600">
                     <Plus className="h-7 w-7 mx-2 border-purple-500 border-2 bg-purple-400 text-white rounded-full" /> 

@@ -15,6 +15,7 @@ interface RetrievedDocumentResponse {
     uploadTime?: string;
     score?: string;
     createdAt: string;
+    algorithm: string;
 }
 
 interface BackendRetrievedDocumentResponse {
@@ -29,6 +30,7 @@ interface BackendRetrievedDocumentResponse {
     upload_time: string;
     score: string;
     created_at: string;
+    algorithm: string;
 }
 
 interface MessageResponse {

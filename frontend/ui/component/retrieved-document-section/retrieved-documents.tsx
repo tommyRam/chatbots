@@ -69,7 +69,7 @@ export default function RetrievedDocuments ({documents, humanMessage} : Retrieve
             <div className="w-full mb-5">
               <div className="flex flex-col justify-center">
                 <div className="text-xl font-bold text-gray-900  ">Related Question</div>
-                <div className="text-gray-600 text-sm mt-1 mb-3">Algorithm: <span className="text-gray-700 font-bold">{currentRagTechnic.displayName}</span></div>
+                <div className="text-gray-600 text-sm mt-1 mb-3">Algorithm: <span className="text-gray-700 font-bold">{documents[0].algorithm}</span></div>
               </div>
               <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm font-bold text-gray-600">
                 {humanMessage.content}

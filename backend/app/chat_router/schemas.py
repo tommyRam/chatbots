@@ -36,3 +36,4 @@ class RetrievedDocumentsResponse(BaseModel):
     upload_time: Optional[str]
     score: Optional[str]
     created_at: datetime
+    algorithm: str
