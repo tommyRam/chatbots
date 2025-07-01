@@ -1,20 +1,28 @@
 "use client";
 
 import { useChat } from "@/hooks/chat-context";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProfileMenu from "@/ui/reusable_component/profile-menu";
 import { clearLocalStorage } from "@/utils/auth";
 import { Bot, MessageSquarePlus, MessageSquarePlusIcon, Sparkles } from "lucide-react";
 import HumanMessage from "@/ui/reusable_component/human-message";
 import AIMessage from "@/ui/reusable_component/ai-message";
+import MessagesLoadingComponent from "@/ui/reusable_component/loading-messages";
+import { useDocsRetrieved } from "@/hooks/docs-context";
 
 interface ChatMessagesProps {
   tempHumanMessage: string | null;
   setTempHumanMessageToNull: () => void;
+  scrollToBottom: () => void;
+  scrollContainer: HTMLElement | null;
 }
 
-export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNull}: ChatMessagesProps) {
+export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNull, scrollToBottom, scrollContainer}: ChatMessagesProps) {
+    const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
+    const [userHasScrolled, setUserHasScrolled] = useState(false);
+    const [lastMessageCount, setLastMessageCount] = useState(0);
+    
     const {
         aiMessages,
         humanMessages,
@@ -22,14 +30,51 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
         loadAIMessagesFromChat,
         loadHumanMessagesFromChat,
         handleChangeCurrentChat,
-        setCurrentChatToNull,
-        loadRetrievedDocumentsFromHumanMessageId
+        setCurrentChatToNull
     } = useChat();
+
+    const {
+      loadRetrievedDocumentsFromHumanMessageId,
+      handleUpdateHumanMessageFetchLoading,
+      setCurrentHumanMessageWithRetrievedDocumentsToNull
+    } = useDocsRetrieved();
+
     const router = useRouter();
+
+    useEffect(() => {
+      const currentMessageCount = humanMessages.length + aiMessages.length;
+      
+      if (currentMessageCount > lastMessageCount || !userHasScrolled) {
+        setTimeout(() => scrollToBottom(), 100);
+        setUserHasScrolled(false); 
+      }
+      
+      setLastMessageCount(currentMessageCount);
+    }, [aiMessages, humanMessages]); 
+    
+    useEffect(() => {
+      const handleScroll = () => {
+        if (scrollContainer) {
+          const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+          const isNearBottom = scrollHeight - scrollTop - clientHeight < 100; // 100px threshold
+          
+          if (!isNearBottom) {
+            setUserHasScrolled(true);
+          }
+        }
+      };
+
+      const scrollContainer = document.getElementById('chat-container');
+      if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', handleScroll);
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    }, []);
 
     useEffect(() => {
         const hanldleReload = async () => {
             const accessToken = localStorage.getItem("access_token");
+            setIsLoadingChatsMessage(true);
             try {
                 if (!accessToken || accessToken === "") {
                     throw new Error("Not authenticated");
@@ -49,22 +94,23 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
                 if(currentChatFormatted !== null) {
                     await loadAIMessagesFromChat(currentChatFormatted.chatId, accessToken);
                     await loadHumanMessagesFromChat(currentChatFormatted.chatId, accessToken);
-                    setTempHumanMessageToNull();
                 } else if(currentChat !== null) {
                     await loadAIMessagesFromChat(currentChat.chatId, accessToken);
                     await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
-                    setTempHumanMessageToNull();
                 }else {
                     localStorage.removeItem("currentChat");
                     setCurrentChatToNull();
                     setTempHumanMessageToNull();
                     router.push("/main/chat/new");
                 }
-                
-            }catch (e) {
+
+                setTempHumanMessageToNull();
+            } catch (e) {
                 clearLocalStorage();
                 router.push("/auth/login");
                 console.log(e);
+            } finally {
+              setIsLoadingChatsMessage(true);
             }
         }
 
@@ -73,34 +119,35 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
 
     const handleClickHumanMessage = async (humanMessage: HumanMessageResponseSchema) => {
       try {
+        handleUpdateHumanMessageFetchLoading(true);
+        setCurrentHumanMessageWithRetrievedDocumentsToNull();
         const accessToken = localStorage.getItem("access_token");
         if (!accessToken || accessToken === "") {
             throw new Error("Not authenticated");
         }
 
-        loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
+        await loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
       } catch(e) {
         clearLocalStorage();
         router.push("/auth/login");
         console.log(e);
+      } finally {
+        handleUpdateHumanMessageFetchLoading(false);
       }
     }
 
  return (
     <div className="flex-1 flex flex-col items-center justify-start mx-[10%] h-full max-w-2xl px-2">
-      {humanMessages.length > 0 ? (
+      {humanMessages.length > 0 && aiMessages.length > 0 ? (
         <div className="w-full space-y-8">
           {humanMessages.map((value, index) => (
             <div key={index} className="w-full">
-              {/* Human Message */}
               <HumanMessage humanMessage={value} handleClickHumanMessage={handleClickHumanMessage} />
 
-              {/* AI Response */}
               {aiMessages[index] && (
                 <AIMessage aiMessages={aiMessages} index={index} />
               )}
 
-              {/* Separator line for better visual separation */}
               {index < humanMessages.length - 1 && (
                 <div className="flex justify-center my-8">
                   <div className="w-16 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent"></div>
@@ -141,25 +188,34 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
         </div>
       ) : (
         <div className="text-center py-12 text-gray-500 w-full h-full flex flex-col items-center justify-center">
-          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-3xl border border-purple-100 shadow-sm">
-            <div className="bg-gradient-to-r from-purple-400 to-indigo-500 p-4 rounded-2xl inline-block mb-4">
-              <MessageSquarePlus className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Start a Conversation</h3>
-            <p className="text-gray-500 max-w-sm">
-              Ask me anything about the docs you send to me! I'm here to help you with information, analysis...
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                Questions
-              </span>
-              <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                Analysis
-              </span>   
-            </div>
-          </div>
+          {
+            isLoadingChatsMessages ? (
+              <>
+                <MessagesLoadingComponent />
+              </>
+            ) : (
+              <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-3xl border border-purple-100 shadow-sm">
+                <div className="bg-gradient-to-r from-purple-400 to-indigo-500 p-4 rounded-2xl inline-block mb-4">
+                  <MessageSquarePlus className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Start a Conversation</h3>
+                <p className="text-gray-500 max-w-sm">
+                  Ask me anything about the docs you send to me! I'm here to help you with information, analysis...
+                </p>
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                    Questions
+                  </span>
+                  <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                    Analysis
+                  </span>   
+                </div>
+              </div>
+            )
+          }
         </div>
-      )}
+      )
+      }
     </div>
   );
 }
