@@ -7,43 +7,32 @@ import ChatInput from "./chat-input";
 import ChatMessages from "./chat-message";
 import { useChat } from "@/hooks/chat-context";
 import { useAllRagTechnics } from "@/hooks/rag-type-context";
+import { useDocsRetrieved } from "@/hooks/docs-context";
 
 export default function Chat() {
     const [inputValue, setInputValue] = useState<string>("");
     const [isPending, setIsPending] = useState<boolean>(false);
-    const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(false);
     const [tempHumanMessage, setTempHumanMessage] = useState<string | null>(null);
     const router = useRouter();
     const messagesContainerRef = useRef<HTMLDivElement>(null);
-    
+    const chatContainer = document.getElementById("chat-container");
+
     const { 
         currentChat, 
         sendMessage, 
         loadLatestAIMessageFromChat, 
-        loadLatestHumanMessageFromChat, 
-        loadRetrievedDocumentsFromHumanMessageId, 
+        loadLatestHumanMessageFromChat,  
         aiMessages, 
         humanMessages 
     } = useChat();
+    
+    const {
+        loadRetrievedDocumentsFromHumanMessageId
+    } = useDocsRetrieved();
 
     const {
         currentRagTechnic
     } = useAllRagTechnics();
-
-    useEffect(() => {
-        if (humanMessages.length === 0 && aiMessages.length === 0) {
-            setIsLoadingMessages(true);
-        } else {
-            setIsLoadingMessages(false);
-        }
-    }, [humanMessages.length, aiMessages.length]);
-
-    // Scroll to bottom when messages are loaded or updated (only after loading is complete)
-    useEffect(() => {
-        if (!isLoadingMessages && (humanMessages.length > 0 || aiMessages.length > 0)) {
-            setTimeout(scrollToBottom, 100); 
-        }
-    }, [humanMessages, aiMessages, isLoadingMessages]);
 
     const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
@@ -55,7 +44,6 @@ export default function Chat() {
         setTempHumanMessage(inputValue);
         const accessToken = localStorage.getItem("access_token") || "";
         setIsPending(true);
-        setIsLoadingMessages(true);
         
         try {
             if(accessToken === "") {
@@ -82,7 +70,6 @@ export default function Chat() {
             throw e;
         }finally{
             setIsPending(false);
-            setIsLoadingMessages(false);
             setInputValue("");
             setTempHumanMessageToNull();
         }
@@ -109,10 +96,15 @@ export default function Chat() {
                 <ChatHeader />
             </div>
             <div 
+                id="chat-container"
                 ref={messagesContainerRef}
                 className="flex-1 flex justify-center pt-0.5 overflow-y-auto pretty-scrollbar-minimal"
             >
-                <ChatMessages tempHumanMessage={tempHumanMessage} setTempHumanMessageToNull={setTempHumanMessageToNull}/>
+                <ChatMessages 
+                    tempHumanMessage={tempHumanMessage} 
+                    setTempHumanMessageToNull={setTempHumanMessageToNull} 
+                    scrollToBottom={scrollToBottom} 
+                    scrollContainer={chatContainer}/>
             </div>
             <div className="w-[100%] h-28 flex justify-center items-center ">
                 <ChatInput

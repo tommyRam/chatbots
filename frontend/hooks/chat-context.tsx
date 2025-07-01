@@ -26,7 +26,6 @@ interface ChatContextType {
     aiMessages: AIMessageResponseSchema[];
     humanMessages: HumanMessageResponseSchema[];
     currentChat: ChatSchema | null;
-    currentHumanMessageWithRetrievedDocuments: HumanMessageWithRetrievedDocumentSchema | null;
     handleAddChat: (newChat: ChatSchema) => void;
     handleAddAllChat: (chats: ChatSchema[]) => void;
     handleAddAIMessage: (newAIMessage: AIMessageResponseSchema) => void;
@@ -34,6 +33,8 @@ interface ChatContextType {
     handleAddHumanMessage: (newHumanMessage: HumanMessageResponseSchema) => void;
     handleAddAllHumanMessages: (allHumanMessages: HumanMessageResponseSchema[]) => void;  
     handleChangeCurrentChat: (newChat: ChatSchema) => void;
+    handleClearAIMessages: () => void;
+    handleClearHumanMessages: () => void;
     setCurrentChatToNull: () => void;
     removeCurrentChat: () => void;
     createChat: (formData: FormData, accessToken: string) => Promise<ChatSchema>,
@@ -43,8 +44,6 @@ interface ChatContextType {
     loadHumanMessagesFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema[]>;
     loadLatestAIMessageFromChat: (chatId: string, accessToken: string) => Promise<AIMessageResponseSchema>;
     loadLatestHumanMessageFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema>;
-    loadRetrievedDocumentsFromHumanMessageId: (humanMessage: HumanMessageResponseSchema, accessToken: string) => Promise<HumanMessageWithRetrievedDocumentSchema>;
-    setCurrentHumanMessageWithRetrievedDocumentsToNull: () => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -56,7 +55,6 @@ export default function ChatProvider (
     const [aiMessages, setAIMessages] = useState<AIMessageResponseSchema[]>([]);
     const [humanMessages, setHumanMessages] = useState<HumanMessageResponseSchema[]>([]);
     const [currentChat, setCurrentChat] = useState<ChatSchema | null>(null);
-    const [currentHumanMessageWithRetrievedDocuments, setCurrentHumanMessageWithRetrievedDocuments] = useState<HumanMessageWithRetrievedDocumentSchema | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -112,6 +110,10 @@ export default function ChatProvider (
         setHumanMessages(allHumanMessages);
     }
 
+    const handleClearHumanMessages = (): void => {
+        setHumanMessages([]);
+    }
+
     const handleChangeCurrentChat = (newChat: ChatSchema): void => {
         setCurrentChat(newChat);
     }
@@ -120,12 +122,8 @@ export default function ChatProvider (
         setCurrentChat(null);
     }
 
-    const handleChangeCurrentHumanMessageWithRetrievedDocuments = (newcurrentHumanMessageWithRetrievedDocuments: HumanMessageWithRetrievedDocumentSchema): void => {
-        setCurrentHumanMessageWithRetrievedDocuments(newcurrentHumanMessageWithRetrievedDocuments);
-    }
-
-    const setCurrentHumanMessageWithRetrievedDocumentsToNull = (): void => {
-        setCurrentHumanMessageWithRetrievedDocuments(null);
+    const handleClearAIMessages = (): void => {
+        setAIMessages([]);
     }
 
     const removeCurrentChat = (): void => {
@@ -209,31 +207,11 @@ export default function ChatProvider (
         }
     }
 
-    const loadRetrievedDocumentsFromHumanMessageId = async (humanMessage: HumanMessageResponseSchema, accessToken: string): Promise<HumanMessageWithRetrievedDocumentSchema> => {
-        try {
-            if(!humanMessage.id){
-                throw new Error("The id of the humman message is required before retrieving the related documents!")
-            }
-
-            const retrievedDocuments: BackendRetrievedDocumentResponse[] = await getRetrievedDocuments(humanMessage.id, accessToken);
-            const retrievedDocumentsFormatted: RetrievedDocumentResponse[] = retrievedDocuments.map((value: BackendRetrievedDocumentResponse) => transformDocumentResponse(value));
-            const humanMessageWithRetrievedDocument: HumanMessageWithRetrievedDocumentSchema = {
-                humanMessage:humanMessage,
-                documents:retrievedDocumentsFormatted
-            }
-            handleChangeCurrentHumanMessageWithRetrievedDocuments(humanMessageWithRetrievedDocument);
-            return humanMessageWithRetrievedDocument
-        } catch(e) {
-            throw new Error("Can't load retrieved documents from human message: " + e);
-        }
-    }
-
     const value = {
         chats,
         aiMessages,
         humanMessages,
         currentChat,
-        currentHumanMessageWithRetrievedDocuments,
         handleAddAllChat,
         handleAddChat,
         handleAddAIMessage,
@@ -241,6 +219,8 @@ export default function ChatProvider (
         handleAddHumanMessage,
         handleAddAllHumanMessages,
         handleChangeCurrentChat,
+        handleClearAIMessages,
+        handleClearHumanMessages,
         setCurrentChatToNull,
         removeCurrentChat,
         createChat,
@@ -249,9 +229,7 @@ export default function ChatProvider (
         loadAIMessagesFromChat,
         loadHumanMessagesFromChat,
         loadLatestAIMessageFromChat,
-        loadLatestHumanMessageFromChat,
-        loadRetrievedDocumentsFromHumanMessageId,
-        setCurrentHumanMessageWithRetrievedDocumentsToNull
+        loadLatestHumanMessageFromChat
     }
 
     return (
