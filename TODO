@@ -1,7 +1,6 @@
 tomorrow: 
   Refactoring
-  front: scrolling up on new messages / add chat message header to make choices between rag technics
-  backend: check expiration token in the backend not working well
+  front: loading
 
   Bugs: - When error on login
         - Display directly the human message after the submit.

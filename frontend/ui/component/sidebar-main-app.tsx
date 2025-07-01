@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useChat } from "@/hooks/chat-context";
 import { capitalizeFirstLetter } from "@/utils/transformers";
+import { useDocsRetrieved } from "@/hooks/docs-context";
 
 export default function SideBarMain () {
     const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -13,9 +14,15 @@ export default function SideBarMain () {
         currentChat,
         handleChangeCurrentChat,
         removeCurrentChat,
-        setCurrentHumanMessageWithRetrievedDocumentsToNull,
-        setCurrentChatToNull
+        setCurrentChatToNull,
+        handleClearAIMessages, 
+        handleClearHumanMessages
     } = useChat();
+
+    const {
+        setCurrentHumanMessageWithRetrievedDocumentsToNull
+    } = useDocsRetrieved();
+
     const router = useRouter();
     const pathname = usePathname();
 
@@ -30,11 +37,17 @@ export default function SideBarMain () {
     }
 
     const handleSetCurrentChat = (index: number): void => {
-        handleChangeCurrentChat(chats[index]);
-        setCurrentHumanMessageWithRetrievedDocumentsToNull();
-        localStorage.setItem("currentChat", JSON.stringify(chats[index]));
+        if(currentChat?.chatId === chats[index].chatId) {
+            return;
+        }
 
         router.push(`${chats[index].chatId}`);
+        setCurrentHumanMessageWithRetrievedDocumentsToNull();
+        handleClearAIMessages();
+        handleClearHumanMessages();
+        setCurrentChatToNull();
+        handleChangeCurrentChat(chats[index]);
+        localStorage.setItem("currentChat", JSON.stringify(chats[index]));
     }
 
     const handleCreateNewChat = (): void => {

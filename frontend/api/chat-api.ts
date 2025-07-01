@@ -1,3 +1,5 @@
+import { resolve } from "path";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const sendUserInput = async (
@@ -97,6 +99,7 @@ export const getAIMessageFromChat = async (
     endpoint: string = "/api/chat/list/ai-message/"
 ): Promise<BackendAIMessageResponseSChema[]> => {
     const AI_MESSAGE_LIST_API = API_URL + endpoint + chatId;
+    await new Promise((resolve) => setTimeout(resolve, 3000));    
     try {
         const response = await fetch(
             AI_MESSAGE_LIST_API,
@@ -123,7 +126,8 @@ export const getLatestAIMessageFromChat = async (
     endpoint: string = "/api/chat/latest/ai-message/"
 ): Promise<BackendAIMessageResponseSChema> => {
     const LATEST_AI_MESSAGE_API = API_URL + endpoint + chatId;
-        try {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
         const response = await fetch(
             LATEST_AI_MESSAGE_API,
             {
@@ -149,6 +153,7 @@ export const getHumanMessageFromChat = async (
     endpoint: string = "/api/chat/list/human-message/"
 ): Promise<BackendHumanMessageResponseSChema[]> => {
     const HUMAN_MESSAGE_LIST_API = API_URL + endpoint + chatId;
+            await new Promise((resolve) => setTimeout(resolve, 3000));
     try {
         const response = await fetch(
             HUMAN_MESSAGE_LIST_API,
@@ -175,6 +180,7 @@ export const getLatestHumanMessageFromChat = async (
     endpoint: string = "/api/chat/latest/human-message/"
 ): Promise<BackendHumanMessageResponseSChema> => {
     const LATEST_HUMAN_MESSAGE_API = API_URL + endpoint + chatId;
+            await new Promise((resolve) => setTimeout(resolve, 3000));
     try {
         const response = await fetch(
             LATEST_HUMAN_MESSAGE_API,
@@ -201,6 +207,7 @@ export const getRetrievedDocuments = async (
     endpoint: string = "/api/chat/list/retrieved-documents/"
 ): Promise<BackendRetrievedDocumentResponse[]> => {
         const RETRIEVED_DOC_API = API_URL + endpoint + humanMessageId;
+                await new Promise((resolve) => setTimeout(resolve, 3000));
     try {
         const response = await fetch(
             RETRIEVED_DOC_API,

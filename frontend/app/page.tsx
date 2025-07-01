@@ -17,10 +17,10 @@ export default function Home() {
         </div>
         <div className="space-x-2.5">
           <Link href={"/auth/login"}>
-            <Button buttonName="Login" />
+            <Button buttonName="Login" actionName="Login..."/>
           </Link>
           <Link href={"/auth/register" }>
-            <Button buttonName="Register" />
+            <Button buttonName="Register" actionName="Registering..."/>
           </Link>
         </div>
       </div>

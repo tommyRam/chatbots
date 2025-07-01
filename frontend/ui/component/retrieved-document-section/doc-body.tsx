@@ -1,25 +1,32 @@
 "use client";
 
 import { useChat } from "@/hooks/chat-context";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearLocalStorage } from "@/utils/auth";
 import RetrievedDocuments from "./retrieved-documents";
+import { useDocsRetrieved } from "@/hooks/docs-context";
 
 export default function DocBody() {
     const { 
         currentChat, 
-        currentHumanMessageWithRetrievedDocuments, 
         humanMessages, 
         loadHumanMessagesFromChat, 
         handleChangeCurrentChat,
-        loadRetrievedDocumentsFromHumanMessageId,
         setCurrentChatToNull
     } = useChat();
+
+    const {
+        currentHumanMessageWithRetrievedDocuments,
+        handleUpdateHumanMessageFetchLoading,
+        loadRetrievedDocumentsFromHumanMessageId
+    } = useDocsRetrieved();
+
     const router = useRouter();
 
     useEffect(() => {
         const handleReload = async () => {
+            handleUpdateHumanMessageFetchLoading(true);
             try {
                 const accessToken = localStorage.getItem("access_token");
                 if(accessToken === null || accessToken === "") {
@@ -54,6 +61,8 @@ export default function DocBody() {
                 clearLocalStorage();
                 router.push("/auth/login");
                 console.log(e);
+            } finally {
+                handleUpdateHumanMessageFetchLoading(false);
             }
         }
 
@@ -62,7 +71,7 @@ export default function DocBody() {
 
     return (
         <div className="flex-1 flex flex-col items-center justify-start h-full px-2">
-            <RetrievedDocuments documents={currentHumanMessageWithRetrievedDocuments?.documents} humanMessage={currentHumanMessageWithRetrievedDocuments?.humanMessage}/>
+            <RetrievedDocuments documents={currentHumanMessageWithRetrievedDocuments?.documents} humanMessage={currentHumanMessageWithRetrievedDocuments?.humanMessage} />
         </div>
     )
 }
