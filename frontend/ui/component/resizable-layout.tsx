@@ -24,7 +24,8 @@ export default function ResizableLayout({ leftComponent, rightComponent }: Resiz
         const containerRect = container.getBoundingClientRect();
         const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
 
-        const constrainedWidth = Math.max(20, Math.min(80, newLeftWidth));
+        var constrainedWidth = Math.max(35, Math.min(80, newLeftWidth));
+        constrainedWidth = Math.min(constrainedWidth, 65);
         setLeftWidth(constrainedWidth);
     }, [isResizing]);
 
