@@ -7,17 +7,21 @@ import RenderJSONDocument from "./retrieved-json-document";
 import RenderViewDocument from "./render-view-document";
 import { useAllRagTechnics } from "@/hooks/rag-type-context";
 import DocumentLoadingComponent from "@/ui/reusable_component/loading-retrieved-documents";
+import { useDocsRetrieved } from "@/hooks/docs-context";
 
 interface RetrievedDocumentsProps {
     documents: RetrievedDocumentResponse[] | undefined;
     humanMessage: HumanMessageResponseSchema | undefined;
-    isDocBodyLoading: boolean;
 }
 
-export default function RetrievedDocuments ({documents, humanMessage, isDocBodyLoading} : RetrievedDocumentsProps) {
+export default function RetrievedDocuments ({documents, humanMessage} : RetrievedDocumentsProps) {
     const [viewMode, setViewMode] = useState<"plain" | "JSON">("plain");
     const [expandedDocs, setExpandedDocs] = useState<Set<string>>(new Set());
     const [copiedDoc, setCopiedDoc] = useState<string | null>(null);
+
+    const {
+      humanMessageFetchLoading
+    } = useDocsRetrieved();
 
     const toggleExpanded = (docId: string) => {
         const newExpanded = new Set(expandedDocs);
@@ -57,7 +61,7 @@ export default function RetrievedDocuments ({documents, humanMessage, isDocBodyL
         return (
         <div className="text-center py-8 text-gray-500 w-full h-full flex flex-col items-center justify-center mb-20">
           {
-            isDocBodyLoading ? (
+            humanMessageFetchLoading ? (
               <>
                 <DocumentLoadingComponent />
               </>

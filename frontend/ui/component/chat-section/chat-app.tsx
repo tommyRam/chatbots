@@ -15,7 +15,12 @@ export default function Chat() {
     const [tempHumanMessage, setTempHumanMessage] = useState<string | null>(null);
     const router = useRouter();
     const messagesContainerRef = useRef<HTMLDivElement>(null);
-    const chatContainer = document.getElementById("chat-container");
+    const [chatContainer, setChatContainer] = useState<HTMLElement | null>(null);
+
+    useEffect(() => {
+        const container = document.getElementById("chat-container");
+        setChatContainer(container);
+    }, []);
 
     const { 
         currentChat, 

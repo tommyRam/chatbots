@@ -35,6 +35,7 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
 
     const {
       loadRetrievedDocumentsFromHumanMessageId,
+      handleUpdateHumanMessageFetchLoading,
       setCurrentHumanMessageWithRetrievedDocumentsToNull
     } = useDocsRetrieved();
 
@@ -118,17 +119,20 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
 
     const handleClickHumanMessage = async (humanMessage: HumanMessageResponseSchema) => {
       try {
+        handleUpdateHumanMessageFetchLoading(true);
         setCurrentHumanMessageWithRetrievedDocumentsToNull();
         const accessToken = localStorage.getItem("access_token");
         if (!accessToken || accessToken === "") {
             throw new Error("Not authenticated");
         }
 
-        loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
+        await loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
       } catch(e) {
         clearLocalStorage();
         router.push("/auth/login");
         console.log(e);
+      } finally {
+        handleUpdateHumanMessageFetchLoading(false);
       }
     }
 
