@@ -8,10 +8,10 @@ import RetrievedDocuments from "./retrieved-documents";
 import { useDocsRetrieved } from "@/hooks/docs-context";
 
 export default function DocBody() {
-    const { 
-        currentChat, 
-        humanMessages, 
-        loadHumanMessagesFromChat, 
+    const {
+        currentChat,
+        humanMessages,
+        loadHumanMessagesFromChat,
         handleChangeCurrentChat,
         setCurrentChatToNull
     } = useChat();
@@ -29,25 +29,25 @@ export default function DocBody() {
             handleUpdateHumanMessageFetchLoading(true);
             try {
                 const accessToken = localStorage.getItem("access_token");
-                if(accessToken === null || accessToken === "") {
+                if (accessToken === null || accessToken === "") {
                     throw new Error("You're not authenticated");
                 }
 
                 var currentChatFormatted: ChatSchema | null = null;
                 var humanMessageResponse: HumanMessageResponseSchema[] = [];
-                if(currentChat == null) {
+                if (currentChat == null) {
                     const currentChatFromLocalStorage = localStorage.getItem("currentChat");
 
-                    if(currentChatFromLocalStorage)
+                    if (currentChatFromLocalStorage)
                         currentChatFormatted = JSON.parse(currentChatFromLocalStorage);
 
-                    if(currentChatFormatted)
+                    if (currentChatFormatted)
                         handleChangeCurrentChat(currentChatFormatted);
                 }
 
-                if(currentChatFormatted) {
+                if (currentChatFormatted) {
                     humanMessageResponse = await loadHumanMessagesFromChat(currentChatFormatted.chatId, accessToken);
-                } else if(currentChat) {
+                } else if (currentChat) {
                     humanMessageResponse = await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
                 } else {
                     localStorage.removeItem("currentChat");
@@ -55,9 +55,9 @@ export default function DocBody() {
                     router.push("/main/chat/new");
                 }
 
-                if(humanMessageResponse.length > 0)
+                if (humanMessageResponse.length > 0)
                     await loadRetrievedDocumentsFromHumanMessageId(humanMessageResponse[humanMessageResponse.length - 1], accessToken);
-            } catch(e) {
+            } catch (e) {
                 clearLocalStorage();
                 router.push("/auth/login");
                 console.log(e);

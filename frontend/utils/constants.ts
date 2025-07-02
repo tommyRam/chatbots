@@ -22,9 +22,6 @@ export const documentsHeaderTypes: DocUIHeader[] = [
         name: "Retrieved documents"
     },
     {
-        name: "Source document"
-    },
-    {
         name: "Code"
     }
 ]

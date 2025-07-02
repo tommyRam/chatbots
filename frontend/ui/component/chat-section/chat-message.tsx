@@ -13,24 +13,24 @@ import MessagesLoadingComponent from "@/ui/reusable_component/loading-messages";
 import { useDocsRetrieved } from "@/hooks/docs-context";
 
 interface ChatMessagesProps {
-  tempHumanMessage: string | null;
-  setTempHumanMessageToNull: () => void;
-  scrollToBottom: () => void;
-  scrollContainer: HTMLElement | null;
-  isPending?: boolean; // Add this prop to track sending state
+    tempHumanMessage: string | null;
+    setTempHumanMessageToNull: () => void;
+    scrollToBottom: () => void;
+    scrollContainer: HTMLElement | null;
+    isPending?: boolean; // Add this prop to track sending state
 }
 
 export default function ChatMessages({
-  tempHumanMessage, 
-  setTempHumanMessageToNull, 
-  scrollToBottom, 
-  scrollContainer,
-  isPending = false
+    tempHumanMessage,
+    setTempHumanMessageToNull,
+    scrollToBottom,
+    scrollContainer,
+    isPending = false
 }: ChatMessagesProps) {
     const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
     const [userHasScrolled, setUserHasScrolled] = useState(false);
     const [lastMessageCount, setLastMessageCount] = useState(0);
-    
+
     const {
         aiMessages,
         humanMessages,
@@ -42,20 +42,20 @@ export default function ChatMessages({
     } = useChat();
 
     const {
-      loadRetrievedDocumentsFromHumanMessageId,
-      handleUpdateHumanMessageFetchLoading,
-      setCurrentHumanMessageWithRetrievedDocumentsToNull
+        loadRetrievedDocumentsFromHumanMessageId,
+        handleUpdateHumanMessageFetchLoading,
+        setCurrentHumanMessageWithRetrievedDocumentsToNull
     } = useDocsRetrieved();
 
     const router = useRouter();
 
     const shouldShowTempMessage = useMemo(() => {
         if (!tempHumanMessage) return false;
-        
-        const messageExists = humanMessages.some(msg => 
+
+        const messageExists = humanMessages.some(msg =>
             msg.content?.trim() === tempHumanMessage.trim()
         );
-        
+
         return !messageExists;
     }, [tempHumanMessage, humanMessages]);
 
@@ -72,37 +72,37 @@ export default function ChatMessages({
 
     // Auto-scroll effect
     useEffect(() => {
-      const currentMessageCount = humanMessages.length + aiMessages.length;
-      
-      // Scroll if new messages added, temp message exists, or user hasn't scrolled
-      if (currentMessageCount > lastMessageCount || tempHumanMessage || !userHasScrolled) {
-        setTimeout(() => scrollToBottom(), 50);
-        if (currentMessageCount > lastMessageCount) {
-          setUserHasScrolled(false); 
+        const currentMessageCount = humanMessages.length + aiMessages.length;
+
+        // Scroll if new messages added, temp message exists, or user hasn't scrolled
+        if (currentMessageCount > lastMessageCount || tempHumanMessage || !userHasScrolled) {
+            setTimeout(() => scrollToBottom(), 50);
+            if (currentMessageCount > lastMessageCount) {
+                setUserHasScrolled(false);
+            }
         }
-      }
-      
-      setLastMessageCount(currentMessageCount);
-    }, [aiMessages, humanMessages, tempHumanMessage, scrollToBottom, lastMessageCount, userHasScrolled]); 
-    
+
+        setLastMessageCount(currentMessageCount);
+    }, [aiMessages, humanMessages, tempHumanMessage, scrollToBottom, lastMessageCount, userHasScrolled]);
+
     // Scroll detection
     useEffect(() => {
-      const handleScroll = () => {
-        if (scrollContainer) {
-          const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-          const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-          
-          if (!isNearBottom) {
-            setUserHasScrolled(true);
-          }
-        }
-      };
+        const handleScroll = () => {
+            if (scrollContainer) {
+                const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+                const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
 
-      const container = scrollContainer || document.getElementById('chat-container');
-      if (container) {
-        container.addEventListener('scroll', handleScroll);
-        return () => container.removeEventListener('scroll', handleScroll);
-      }
+                if (!isNearBottom) {
+                    setUserHasScrolled(true);
+                }
+            }
+        };
+
+        const container = scrollContainer || document.getElementById('chat-container');
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
     }, [scrollContainer]);
 
     // Initial data loading
@@ -110,27 +110,27 @@ export default function ChatMessages({
         const handleReload = async () => {
             const accessToken = localStorage.getItem("access_token");
             setIsLoadingChatsMessage(true);
-            
+
             try {
                 if (!accessToken || accessToken === "") {
                     throw new Error("Not authenticated");
                 }
 
                 var currentChatFormatted: ChatSchema | null = null;
-                if(currentChat == null) {
+                if (currentChat == null) {
                     const currentChatFromLocalStorage = localStorage.getItem("currentChat");
 
-                    if(currentChatFromLocalStorage)
+                    if (currentChatFromLocalStorage)
                         currentChatFormatted = JSON.parse(currentChatFromLocalStorage);
 
-                    if(currentChatFormatted)
+                    if (currentChatFormatted)
                         handleChangeCurrentChat(currentChatFormatted);
                 }
 
-                if(currentChatFormatted !== null) {
+                if (currentChatFormatted !== null) {
                     await loadAIMessagesFromChat(currentChatFormatted.chatId, accessToken);
                     await loadHumanMessagesFromChat(currentChatFormatted.chatId, accessToken);
-                } else if(currentChat !== null) {
+                } else if (currentChat !== null) {
                     await loadAIMessagesFromChat(currentChat.chatId, accessToken);
                     await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
                 } else {
@@ -146,7 +146,7 @@ export default function ChatMessages({
                 router.push("/auth/login");
                 console.log(e);
             } finally {
-              setIsLoadingChatsMessage(false);
+                setIsLoadingChatsMessage(false);
             }
         }
 
@@ -154,22 +154,22 @@ export default function ChatMessages({
     }, [])
 
     const handleClickHumanMessage = async (humanMessage: HumanMessageResponseSchema) => {
-      try {
-        handleUpdateHumanMessageFetchLoading(true);
-        setCurrentHumanMessageWithRetrievedDocumentsToNull();
-        const accessToken = localStorage.getItem("access_token");
-        if (!accessToken || accessToken === "") {
-            throw new Error("Not authenticated");
-        }
+        try {
+            handleUpdateHumanMessageFetchLoading(true);
+            setCurrentHumanMessageWithRetrievedDocumentsToNull();
+            const accessToken = localStorage.getItem("access_token");
+            if (!accessToken || accessToken === "") {
+                throw new Error("Not authenticated");
+            }
 
-        await loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
-      } catch(e) {
-        clearLocalStorage();
-        router.push("/auth/login");
-        console.log(e);
-      } finally {
-        handleUpdateHumanMessageFetchLoading(false);
-      }
+            await loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
+        } catch (e) {
+            clearLocalStorage();
+            router.push("/auth/login");
+            console.log(e);
+        } finally {
+            handleUpdateHumanMessageFetchLoading(false);
+        }
     }
 
     return (
@@ -211,7 +211,7 @@ export default function ChatMessages({
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {isPending && (
                                 <div className="flex items-center space-x-2 ml-4 mt-4">
                                     <div className="flex justify-center items-center border-gray-300 border-2 rounded-full bg-white w-8 h-8">
@@ -250,7 +250,7 @@ export default function ChatMessages({
                                 </span>
                                 <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
                                     Analysis
-                                </span>   
+                                </span>
                             </div>
                         </div>
                     )}

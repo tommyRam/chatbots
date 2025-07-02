@@ -18,10 +18,10 @@ export default function Button({
     action
 }: ButtonProps) {
     return (
-        <button 
+        <button
             disabled={isPending}
             type={type}
-            onClick={action} 
+            onClick={action}
             className={`bg-purple-900 hover:bg-purple-600 hover:shadow-purple-900 hover:cursor-pointer text-white font-bold px-5 py-2 rounded ${style}`}
         >
             {

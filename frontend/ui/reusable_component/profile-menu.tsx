@@ -54,17 +54,17 @@ export default function ProfileMenu(
                 showProfileModal && userData && (
                     <div className="absolute right-0 top-10 flex flex-col gap-y-3 bg-white border border-gray-300 rounded-xl shadow-lg px-1.5 py-3 z-11">
                         <div className="flex items-center justify-start gap-x-2 px-2 py-1 rounded-md">
-                            <UserCircle2 className="w-5 h-5 text-gray-500"/>
+                            <UserCircle2 className="w-5 h-5 text-gray-500" />
                             <div className="text-gray-500">{userData.email}</div>
                         </div>
                         <div className="flex flex-col gap-y-1">
-                            <hr className="mt-1 text-gray-500"/>
-                            <div 
+                            <hr className="mt-1 text-gray-500" />
+                            <div
                                 onClick={handleLogout}
                                 className="flex items-center justify-start gap-x-2 hover:cursor-pointer hover:bg-gray-200 px-2 py-1  rounded-md">
                                 <LogOutIcon className="w-5 h-5 text-gray-500" />
                                 <div className="text-gray-500">Log out</div>
-                            </div>                            
+                            </div>
                         </div>
                     </div>
                 )
