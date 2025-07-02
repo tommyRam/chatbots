@@ -5,7 +5,8 @@ from operator import itemgetter
 from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, FewShotChatMessagePromptTemplate
+from langchain_core.runnables import RunnableLambda
 
 
 from config import settings
@@ -18,7 +19,7 @@ from .utils.formatters import (
     format_qa_pair)
 
 from .schemas import ChatMessageResponse
-from .utils.prompts import prompts
+from .utils.prompts import prompts, stepback_RAG_prompt_examples
 
 _ = load_dotenv(find_dotenv())
 
@@ -188,6 +189,63 @@ async def decomposition_RAG(
     except Exception as e:
         print(f"An error was occured: {e}")
         raise
+
+async def stepback_RAG(
+    question: str,
+    chat_id: str
+):
+    try: 
+        example_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("human", "{input}"),
+                ("ai", "{output}")
+            ]
+        )
+        few_shot = FewShotChatMessagePromptTemplate(
+            example_prompt=example_prompt,
+            examples=stepback_RAG_prompt_examples
+        )
+        generate_stepback_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", prompts["stepback_rag_generate_query"]),
+                few_shot,
+                ("user", "{question}")
+            ]
+        )
+
+        generate_queries_step_back_chain = generate_stepback_prompt | llm | StrOutputParser()
+        new_question_from_step_back = generate_queries_step_back_chain.invoke({"question": question})
+
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+        relevant_docs_from_original_question = vectorestore.similarity_search_with_score(query=question)
+        relevant_docs_from_step_back_question = vectorestore.similarity_search_with_score(query=new_question_from_step_back)
+
+        relevant_docs_contents = format_docs_list(relevant_docs_from_original_question + relevant_docs_from_step_back_question)
+
+        formatted_relevant_docs_into_one_long_string_from_original_question = format_docs(relevant_docs_from_original_question)
+        formatted_relevant_docs_into_one_long_string_from_stepback_question = format_docs(relevant_docs_from_step_back_question)
+
+        response_prompt_template = prompts["formatting_instructions"]  + "\n\n" + prompts["stepback_rag_template"]
+        response_prompt = ChatPromptTemplate.from_template(response_prompt_template)
+
+        chain = (
+            response_prompt
+            | llm 
+            | StrOutputParser()
+        )
+
+        chat_response = chain.invoke({
+            "normal_context": formatted_relevant_docs_into_one_long_string_from_original_question,
+            "step_back_context": formatted_relevant_docs_into_one_long_string_from_stepback_question,
+            "question": question
+        })
+
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=chat_response)
+        return response
+    except Exception as e:
+        print(f"An error was occured: {e}")
+        raise e
+
 
 
 

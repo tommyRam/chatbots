@@ -41,6 +41,29 @@ prompts = {
 
         \n-----\n {context} \n--------\n
 
-        Use the above context and any background question + answer pairs to answer the question: \n {question}"""
-        
+        Use the above context and any background question + answer pairs to answer the question: \n {question}""",
+    
+    "stepback_rag_generate_query": """You are an expert at world knowledge. Your task is to step back and paraphrase a question to a more generic step-back question, which is easier to answer. Here are a few examples:""",
+
+    "stepback_rag_template": """You are an expert of world knowledge. I am going to ask you a question. Your response should be comprehensive and not contradicted with the following context if they are relevant. Otherwise, ignore them if they are not relevant.
+
+    # {normal_context}
+    # {step_back_context}
+
+    # Original Question: {question}
+    # Answer:""",
+
+    
 }
+
+# It is used as an example used as a few shots
+stepback_RAG_prompt_examples = [
+    {
+        "input": "Could the members of The Police perform lawful arrests?",
+        "output": "what can the members of The Police do?",
+    },
+    {
+        "input": "Jan Sindel’s was born in what country?",
+        "output": "what is Jan Sindel’s personal history?",
+    },
+]

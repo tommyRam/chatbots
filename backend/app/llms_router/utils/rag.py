@@ -1,4 +1,5 @@
 import os
+
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 from langchain_community.document_loaders import (
@@ -16,8 +17,11 @@ from typing import List
 import tempfile
 from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
+import sqlalchemy.orm as orm
 
 from config import settings
+from ..schemas import ChatMessageResponse, UserRequest
+from chat_router.services import add_ai_message_to_db, add_human_message_to_db, add_retrieved_documents_to_db
 
 
 _ = load_dotenv(find_dotenv())
@@ -110,3 +114,8 @@ def get_vectorestore_from_namespace(
     index = pc.Index(settings.PINECONE_INDEX_NAME)
     vectorestore = PineconeVectorStore(index=index, embedding=embedding, namespace=namespace)
     return vectorestore
+
+def add_human_ai_messages_and_documents_to_db(response: ChatMessageResponse, request: UserRequest, algorithm: str, db: orm.Session):
+    human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query, db=db)
+    add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
+    add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm=algorithm, db=db)

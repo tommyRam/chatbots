@@ -5,8 +5,10 @@ from .services import (
     simple_RAG, 
     multi_query_RAG, 
     fusion_RAG, 
-    decomposition_RAG
+    decomposition_RAG,
+    stepback_RAG
 )
+from .utils.rag import add_human_ai_messages_and_documents_to_db
 from router.schemas import LoginUserRequest
 from router.services import current_user, get_db
 from chat_router.services import (
@@ -27,9 +29,7 @@ async def simple_rag(
     ):
     try:
         response = await simple_RAG(request.query, request.chat_id)
-        human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query,db=db)
-        add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
-        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm="Simple RAG", db=db)
+        add_human_ai_messages_and_documents_to_db(response=response, request=request, algorithm="Simple RAG", db=db)
         return response
     except Exception as e:
         raise HTTPException(
@@ -45,9 +45,7 @@ async def multi_query_rag(
     ):
     try: 
         response = await multi_query_RAG(request.query, request.chat_id)
-        human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query,db=db)
-        add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
-        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm="Multi Query RAG", db=db)        
+        add_human_ai_messages_and_documents_to_db(response=response, request=request, algorithm="Multi query RAG", db=db)       
         return response
     except Exception as e:
         raise HTTPException(
@@ -63,9 +61,7 @@ async def fusion_rag(
     ):
     try: 
         response = await fusion_RAG(request.query, request.chat_id)
-        human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query,db=db)
-        add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
-        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm="Fusion RAG", db=db)        
+        add_human_ai_messages_and_documents_to_db(response=response, request=request, algorithm="Fusion RAG", db=db)      
         return response
     except Exception as e:
         raise HTTPException(
@@ -81,12 +77,27 @@ async def decomposition_rag(
     ):
     try:
         response = await decomposition_RAG(request.query, request.chat_id)
-        human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query,db=db)
-        add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
-        add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm="Decomposition RAG", db=db)
+        add_human_ai_messages_and_documents_to_db(response=response, request=request, algorithm="Decomposition RAG", db=db)
         return response
     except Exception as e:
          raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail= f"An error from server: {e}"
         )
+
+@router.post("/stepbackRAG", response_model=ChatMessageResponse)
+async def stepback_RAG_api(
+    request: UserRequest,
+    user: LoginUserRequest = Depends(current_user),
+    db: orm.Session = Depends(get_db)
+): 
+    try:
+        response = await stepback_RAG(question=request.query, chat_id=request.chat_id)
+        add_human_ai_messages_and_documents_to_db(response=response, request=request, algorithm="Stepback RAG", db=db)
+        return response
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail= f"An error from server: {e}"
+        ) 
