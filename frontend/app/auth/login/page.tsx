@@ -13,8 +13,8 @@ import { getUserChatList } from "@/api/chat-api";
 
 type LoginFormField = keyof LoginFormData
 
-export default function Login(){
-    const [submittingError, setSubmittingError]= useState<string>("");
+export default function Login() {
+    const [submittingError, setSubmittingError] = useState<string>("");
     const [isPending, setIsPending] = useState<boolean>(false);
     const router = useRouter();
     const {
@@ -36,7 +36,7 @@ export default function Login(){
 
         const isValidForm = validateForm();
         setIsPending(true);
-        if (isValidForm){
+        if (isValidForm) {
             try {
                 const response = await login(formData);
                 const userData = await getCurrentUser(response.access_token);
@@ -48,12 +48,12 @@ export default function Login(){
                 const chatList = await getUserChatList(userData.id, response.access_token);
                 localStorage.setItem("chatList", JSON.stringify(chatList));
                 router.push("/main/chat/new");
-            } catch (e: unknown){
+            } catch (e: unknown) {
                 setSubmittingError("" + e);
             } finally {
                 setIsPending(false);
             }
-        }else {
+        } else {
             setIsPending(false);
         }
     }
@@ -78,7 +78,7 @@ export default function Login(){
                 </div>
                 <div>
                     <form className="space-y-5" onSubmit={handleSubmit}>
-                        <AuthInputForm 
+                        <AuthInputForm
                             id="user_id"
                             type="text"
                             label="Username or email"
@@ -89,7 +89,7 @@ export default function Login(){
                             onChange={handleInputChange("username")}
                             onBlur={handleInputBlur("username")}
                         />
-                        <AuthInputForm 
+                        <AuthInputForm
                             id="password"
                             type="password"
                             label="Password"
@@ -102,18 +102,18 @@ export default function Login(){
                         />
 
                         {
-                            submittingError && 
+                            submittingError &&
                             <div className="text-red-400 text-sm">
                                 {submittingError}
                             </div>
                         }
 
                         <div className="flex justify-center pt-2">
-                            <Button 
-                                type="submit" 
-                                buttonName="Login" 
-                                actionName="Login..." 
-                                style="w-full" 
+                            <Button
+                                type="submit"
+                                buttonName="Login"
+                                actionName="Login..."
+                                style="w-full"
                                 isPending={isPending}
                                 action={handleSubmit}
                             />
@@ -122,7 +122,7 @@ export default function Login(){
                 </div>
                 <div>
                     <Link href={"/auth/register"}>
-                        <div 
+                        <div
                             className="flex justify-center pt-6 text-blue-400 hover:cursor-pointer"
                         >
                             Create an account ?

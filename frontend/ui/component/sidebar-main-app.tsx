@@ -7,7 +7,7 @@ import { useChat } from "@/hooks/chat-context";
 import { capitalizeFirstLetter } from "@/utils/transformers";
 import { useDocsRetrieved } from "@/hooks/docs-context";
 
-export default function SideBarMain () {
+export default function SideBarMain() {
     const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
     const {
         chats,
@@ -15,7 +15,7 @@ export default function SideBarMain () {
         handleChangeCurrentChat,
         removeCurrentChat,
         setCurrentChatToNull,
-        handleClearAIMessages, 
+        handleClearAIMessages,
         handleClearHumanMessages
     } = useChat();
 
@@ -28,7 +28,7 @@ export default function SideBarMain () {
 
     useEffect(() => {
         const currentChatFromStorage = localStorage.getItem("currentChat");
-        if(currentChatFromStorage === null)
+        if (currentChatFromStorage === null)
             setCurrentChatToNull();
     }, [])
 
@@ -37,7 +37,7 @@ export default function SideBarMain () {
     }
 
     const handleSetCurrentChat = (index: number): void => {
-        if(currentChat?.chatId === chats[index].chatId) {
+        if (currentChat?.chatId === chats[index].chatId) {
             return;
         }
 
@@ -66,31 +66,31 @@ export default function SideBarMain () {
                 bg-white transition-all duration-300 ease-in-out
                 flex flex-col shadow-sm 
                 items-center
-                border-r-4 border-gray-400
+                border-r-2 border-gray-400
             `}
         >
-            <div 
+            <div
                 className="flex items-center justify-between px-3.5 py-5 w-full border-b border-gray-100 h-14"
             >
                 {!isCollapsed && (
-                        <div className="text-purple-950 font-bold text-3xl">
-                            RAnGo
-                        </div>
-                    )}
+                    <div className="text-purple-950 font-bold text-3xl">
+                        RAnGo
+                    </div>
+                )}
                 <button
                     onClick={toogleSidebar}
                 >
                     {isCollapsed ? (
-                            <Menu className="h-7 w-7 text-gray-600" />
-                        ) : (
-                            <ChevronLeft className="h-8 w-8 text-gray-600" />
-                        )}
+                        <Menu className="h-7 w-7 text-gray-600" />
+                    ) : (
+                        <ChevronLeft className="h-8 w-8 text-gray-600" />
+                    )}
                 </button>
             </div>
 
             <div className="p-4 w-full h-full flex flex-col items-center">
                 <div className="flex-1 w-full flex flex-col">
-                    <button 
+                    <button
                         className={`
                         ${isCollapsed ? 'w-9 h-9 p-0' : 'w-full px-4 py-2'} 
                         bg-purple-900 hover:bg-purple-700 
@@ -104,7 +104,7 @@ export default function SideBarMain () {
                     >
                         <Plus className="h-5 w-5" />
                         {!isCollapsed && <span>New Chat</span>}
-                    </button>    
+                    </button>
                     <button
                         className={`
                         ${isCollapsed ? 'w-9 h-9 p-0' : 'w-full px-4 py-2'}
@@ -116,45 +116,67 @@ export default function SideBarMain () {
                         shadow-inner shadow-purple-100 hover:shadow-none
                         flex items-center justify-center gap-2
                         font-medium
-                        `}  
+                        `}
                     >
                         <MessageCircleMoreIcon className="h-5 w-5" />
                         {!isCollapsed && <span>Chats</span>}
-                    </button>                
+                    </button>
                 </div>
                 <div className="h-[80%] w-full">
-                   {
-                    !isCollapsed && 
-                    <>
-                        <div className="font-bold text-xs text-gray-700">
-                            Recents chat
-                        </div>
-                        <div className="mt-1">
-                            {
-                                chats && (
-                                    chats.map((value, index) => {
-                                        return (
-                                            <div 
-                                                onClick={() => handleSetCurrentChat(index)}
-                                                key={value.chatId} 
-                                                className={`flex items-center justify-between my-2 py-1.5 px-1.5 hover:cursor-pointer rounded-lg ${currentChat?.chatId === value.chatId ? "bg-purple-900 hover:bg-purple-800" : "bg-white hover:bg-purple-50 "}`}
-                                            >
-                                                <div className={`overflow-hidden font-bold  ${currentChat?.chatId === value.chatId ? "text-white" : "text-gray-500"}`}>
-                                                    {capitalizeFirstLetter(value.chatName)}
-                                                </div>
-                                                <div className="flex items-center justify-center rounded-md hover:cursor-pointer hover:border-[0.5px] border-gray-600 w-7 h-7">
-                                                    <TrashIcon  className={`hover:text-purple-950 h-4 w-4 hover:h-3.5 hover:w-3.5 ${currentChat?.chatId === value.chatId ? "text-white" : "text-gray-500" }`}/>
-                                                </div>                                                               
+                    {
+                        !isCollapsed &&
+                        <>
+                            <div className="space-y-2">
+                                <div className="flex items-center space-x-2 px-2">
+                                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                    <h3 className="text-sm font-semibold text-gray-700">RECENT CHATS</h3>
+                                </div>
+
+                                <div className="space-y-1">
+                                    {chats?.map((chat, index) => (
+                                        <div
+                                            key={chat.chatId}
+                                            onClick={() => handleSetCurrentChat(index)}
+                                            className={`
+                                            group relative flex items-center px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200
+                                            ${currentChat?.chatId === chat.chatId
+                                                    ? "bg-purple-600 text-white shadow-sm"
+                                                    : "text-gray-700 hover:bg-purple-50 border border-transparent hover:border-purple-100"
+                                                }
+                                        `}
+                                        >
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`
+                                                text-sm font-medium truncate
+                                                ${currentChat?.chatId === chat.chatId ? "text-white" : "text-gray-800"}
+                                            `}>
+                                                    {capitalizeFirstLetter(chat.chatName)}
+                                                </p>
                                             </div>
-                                        )
-                                    })
-                                )
-                            }
-                        </div>
-                    </>
-                   }
+
+                                            <div className={`
+                                            ml-2 transition-opacity duration-200
+                                            ${currentChat?.chatId === chat.chatId
+                                                    ? "opacity-100"
+                                                    : "opacity-0 group-hover:opacity-60"
+                                                }
+                                        `}>
+                                                {currentChat?.chatId === chat.chatId ? (
+                                                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                ) : (
+                                                    <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    }
                 </div>
-            </div>                    
+            </div>
         </div>
     )
 }

@@ -19,7 +19,7 @@ export default function HeaderMain() {
     useEffect(() => {
         setTimeout(() => {
             const userDataFromLocalsStorage: string | null = localStorage.getItem("user_data");
-            if(userDataFromLocalsStorage){
+            if (userDataFromLocalsStorage) {
                 setUser(JSON.parse(userDataFromLocalsStorage));
             } else {
                 console.log("Not authenticated")
@@ -34,23 +34,23 @@ export default function HeaderMain() {
     }, [])
 
     return (
-        <div className="flex items-center justify-between w-full bg-gradient-to-b h-14 bg-white px-7 border-b-2 border-purple-800">
+        <div className="flex items-center justify-between w-full bg-gradient-to-b h-14 bg-white px-7 border-b-2 border-purple-400">
             <div></div>
-           {
-            currentChat && (
-                <div className="flex items-center bg-gray-200 rounded-3xl text-2xs shadow-gray-300 shadow-inner h-[70%] text-gray-600 px-5">
-                   {capitalizeFirstLetter(currentChat.chatName)}
-                </div>
-            )
-           }
-            <div 
-                className="flex items-center justify-between w-21 h-full"    
+            {
+                currentChat && (
+                    <div className="flex items-center bg-gray-200 rounded-3xl text-2xs shadow-gray-300 shadow-inner h-[70%] text-gray-600 px-5">
+                        {capitalizeFirstLetter(currentChat.chatName)}
+                    </div>
+                )
+            }
+            <div
+                className="flex items-center justify-between w-21 h-full"
             >
                 <div className="flex items-center justify-center hover:bg-purple-300 hover:cursor-pointer w-9 h-9 rounded-md">
                     <MoreHorizontal />
                 </div>
                 <div className="flex items-center">
-                    <ProfileMenu userData={user}/>
+                    <ProfileMenu userData={user} />
                 </div>
             </div>
         </div>

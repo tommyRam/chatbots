@@ -8,17 +8,17 @@ interface ChatInputProps {
     handleSendQuery: () => void
 }
 
-export default function ChatInput ({
+export default function ChatInput({
     inputValue,
     isPending,
     handleInputChange,
     handleSendQuery
 }: ChatInputProps) {
-    
+
     const handleKeyPress = (e: { key: string; shiftKey: any; preventDefault: () => void; }) => {
         if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        handleSendQuery();
+            e.preventDefault();
+            handleSendQuery();
         }
     };
 
@@ -38,11 +38,11 @@ export default function ChatInput ({
                     disabled={isPending || !inputValue.trim()}
                     className="absolute right-3 bottom-8 p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-300 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
                 >
-                {isPending ? (
-                    <Loader2 className="flex justify-center items-center w-6 h-6 animate-spin" />
-                ) : (
-                    <Send className="flex justify-center items-center w-6 h-6" />
-                )}
+                    {isPending ? (
+                        <Loader2 className="flex justify-center items-center w-6 h-6 animate-spin" />
+                    ) : (
+                        <Send className="flex justify-center items-center w-6 h-6" />
+                    )}
                 </button>
             </div>
         </div>

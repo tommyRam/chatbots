@@ -8,17 +8,17 @@ import { useChat } from "@/hooks/chat-context";
 export default function NewChatMain() {
 
     return (
-          <ResizableLayout
-                leftComponent={
-                    <div className="w-full h-full bg-white">
-                        <CreateChat />
-                    </div>
-                }
-                rightComponent={
-                    <div className="w-full h-full bg-white">
-                        <div className="w-full h-full flex justify-center items-center">No document</div>
-                    </div>
-                }
-            />
+        <ResizableLayout
+            leftComponent={
+                <div className="w-full h-full bg-white">
+                    <CreateChat />
+                </div>
+            }
+            rightComponent={
+                <div className="w-full h-full bg-white">
+                    <div className="w-full h-full flex justify-center items-center">No document</div>
+                </div>
+            }
+        />
     )
 }

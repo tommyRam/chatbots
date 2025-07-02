@@ -36,7 +36,7 @@ export default function CreateChat() {
         setSelectedFiles(files);
         console.log("selected files:" + selectedFiles);
     }
-        
+
     const handleSubmit = async (e: FormEvent<HTMLElement>): Promise<void> => {
         e.preventDefault();
         setIsPending(true);
@@ -44,7 +44,7 @@ export default function CreateChat() {
         try {
             const user_data = JSON.parse(localStorage.getItem("user_data") || "");
 
-            if(user_data === "" || user_data === null){
+            if (user_data === "" || user_data === null) {
                 router.push("auth/login")
             }
 
@@ -53,7 +53,7 @@ export default function CreateChat() {
             formData.append("user_id", user_data.id);
             formData.append("chat_name", chatName);
 
-            for (let i = 0;selectedFiles && i < selectedFiles.length; i++) {
+            for (let i = 0; selectedFiles && i < selectedFiles.length; i++) {
                 formData.append("uploaded_files", selectedFiles[i]);
             }
 
@@ -74,7 +74,7 @@ export default function CreateChat() {
                 setShowCreatingChatModal(false);
                 router.push(`/main/chat/${newChatFormatted.chatId}`);
             }, 3000);
-        } catch(e){
+        } catch (e) {
             console.log(e)
             localStorage.removeItem("currentChat");
             setCurrentChatToNull();
@@ -83,12 +83,12 @@ export default function CreateChat() {
             setIsCreatingNewChatSuccess(false);
             setShowCreatingChatModal(true);
 
-            setTimeout(() => {setShowCreatingChatModal(false)}, 3000);
-        }finally {
+            setTimeout(() => { setShowCreatingChatModal(false) }, 3000);
+        } finally {
             setIsPending(false);
         }
     }
-    
+
     return (
         <div className="h-full flex justify-center items-center">
             {
@@ -102,11 +102,11 @@ export default function CreateChat() {
             }
             <div className="flex flex-col items-center max-w-lg w-[60%] h-[45%] rounded-lg bg-purple-50 p-2.5">
                 <div className="flex items-center justify-center text-2xl font-bold text-gray-600">
-                    <Plus className="h-7 w-7 mx-2 border-purple-500 border-2 bg-purple-400 text-white rounded-full" /> 
+                    <Plus className="h-7 w-7 mx-2 border-purple-500 border-2 bg-purple-400 text-white rounded-full" />
                     Create new chat
                 </div>
                 <div className="flex-1 flex justify-center w-full h-full pt-5">
-                    <form 
+                    <form
                         className="ml-14"
                         onSubmit={handleSubmit}>
                         <div className="flex flex-col justify-center items-start py-2.5">
@@ -126,7 +126,7 @@ export default function CreateChat() {
                         <div className="flex flex-col justify-center items-start py-2.5">
                             <label className="text-gray-600">Document</label>
                             <div className="relative w-[80%]">
-                                <input 
+                                <input
                                     id="document"
                                     required={true}
                                     type="file"
@@ -136,8 +136,8 @@ export default function CreateChat() {
                                 />
                                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
                                     <div className="flex justify-center items-center bg-purple-100 hover:bg-purple-900 hover:cursor-pointer px-2.5 py-2.5 rounded">
-                                    <Upload className="w-4 h-4 text-purple-700" />
-                                    {/* <span className="text-sm font-medium text-purple-700">Choose File</span> */}
+                                        <Upload className="w-4 h-4 text-purple-700" />
+                                        {/* <span className="text-sm font-medium text-purple-700">Choose File</span> */}
                                     </div>
                                 </div>
                             </div>
@@ -150,7 +150,7 @@ export default function CreateChat() {
                         }
 
                         <div className="py-5">
-                            <Button 
+                            <Button
                                 buttonName="Upload"
                                 actionName="Uploading..."
                                 isPending={isPending}

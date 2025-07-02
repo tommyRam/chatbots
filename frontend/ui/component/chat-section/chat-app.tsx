@@ -22,15 +22,15 @@ export default function Chat() {
         setChatContainer(container);
     }, []);
 
-    const { 
-        currentChat, 
-        sendMessage, 
-        loadLatestAIMessageFromChat, 
-        loadLatestHumanMessageFromChat,  
-        aiMessages, 
-        humanMessages 
+    const {
+        currentChat,
+        sendMessage,
+        loadLatestAIMessageFromChat,
+        loadLatestHumanMessageFromChat,
+        aiMessages,
+        humanMessages
     } = useChat();
-    
+
     const {
         loadRetrievedDocumentsFromHumanMessageId
     } = useDocsRetrieved();
@@ -45,35 +45,45 @@ export default function Chat() {
     }
 
     const handleSendQuery = async () => {
-        scrollToBottom();
-        setTempHumanMessage(inputValue);
-        const accessToken = localStorage.getItem("access_token") || "";
-        setIsPending(true);
-        
-        try {
-            if(accessToken === "") {
-                router.push("/auth/login");
-                setTempHumanMessageToNull();
-                throw new Error("Missing access token");
-            }
+        if (!inputValue.trim()) {
+            return;
+        }
 
-            if(currentChat && currentChat.chatId){
+        setTempHumanMessage(inputValue);
+        setInputValue("");
+        const accessToken = localStorage.getItem("access_token") || "";
+
+        if (accessToken === "") {
+            router.push("/auth/login");
+            setTempHumanMessageToNull();
+            return;
+        }
+
+        setIsPending(true);
+
+        setTimeout(() => scrollToBottom(), 100);
+
+        try {
+
+            if (currentChat && currentChat.chatId) {
                 const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken, currentRagTechnic.enpoint);
-                if(response.chatMessage) {
-                    const humanMessage = await loadLatestHumanMessageFromChat(currentChat.chatId, accessToken);
-                    await loadLatestAIMessageFromChat(currentChat.chatId, accessToken);
-                    await loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
-                    setInputValue("");
+                if (response.chatMessage) {
+                    await Promise.all([
+                        loadLatestAIMessageFromChat(currentChat.chatId, accessToken),
+                        loadLatestHumanMessageFromChat(currentChat.chatId, accessToken).then(humanMessage =>
+                            loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken)
+                        )
+                    ]);
                     setTempHumanMessageToNull();
                 }
-            }else {
+            } else {
                 console.log("Not authenticated");
                 router.push("/auth/login");
-            }            
-        }catch (e){
+            }
+        } catch (e) {
             console.log(e);
             throw e;
-        }finally{
+        } finally {
             setIsPending(false);
             setInputValue("");
             setTempHumanMessageToNull();
@@ -96,20 +106,22 @@ export default function Chat() {
     }
 
     return (
-        <div className="h-full w-full flex flex-col ">   
+        <div className="h-full w-full flex flex-col ">
             <div className="h-12">
                 <ChatHeader />
             </div>
-            <div 
+            <div
                 id="chat-container"
                 ref={messagesContainerRef}
                 className="flex-1 flex justify-center pt-0.5 overflow-y-auto pretty-scrollbar-minimal"
             >
-                <ChatMessages 
-                    tempHumanMessage={tempHumanMessage} 
-                    setTempHumanMessageToNull={setTempHumanMessageToNull} 
-                    scrollToBottom={scrollToBottom} 
-                    scrollContainer={chatContainer}/>
+                <ChatMessages
+                    tempHumanMessage={tempHumanMessage}
+                    setTempHumanMessageToNull={setTempHumanMessageToNull}
+                    scrollToBottom={scrollToBottom}
+                    scrollContainer={chatContainer}
+                    isPending={isPending}
+                />
             </div>
             <div className="w-[100%] h-28 flex justify-center items-center ">
                 <ChatInput

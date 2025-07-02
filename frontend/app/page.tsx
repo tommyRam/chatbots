@@ -10,20 +10,20 @@ export default function Home() {
       <LandingPageHeader />
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col justify-center items-center space-y-7">
-        <div>
-          <p className="text-3xl font-bold">
-            Welcome to RAnGo app where you can test the best RAG for your application
-          </p>
+          <div>
+            <p className="text-3xl font-bold">
+              Welcome to RAnGo app where you can test the best RAG for your application
+            </p>
+          </div>
+          <div className="space-x-2.5">
+            <Link href={"/auth/login"}>
+              <Button buttonName="Login" actionName="Login..." />
+            </Link>
+            <Link href={"/auth/register"}>
+              <Button buttonName="Register" actionName="Registering..." />
+            </Link>
+          </div>
         </div>
-        <div className="space-x-2.5">
-          <Link href={"/auth/login"}>
-            <Button buttonName="Login" actionName="Login..."/>
-          </Link>
-          <Link href={"/auth/register" }>
-            <Button buttonName="Register" actionName="Registering..."/>
-          </Link>
-        </div>
-      </div>
       </div>
     </div>
   );
