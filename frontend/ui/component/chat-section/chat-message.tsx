@@ -1,7 +1,8 @@
+// Fixed ChatMessages component
 "use client";
 
 import { useChat } from "@/hooks/chat-context";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProfileMenu from "@/ui/reusable_component/profile-menu";
 import { clearLocalStorage } from "@/utils/auth";
@@ -16,9 +17,16 @@ interface ChatMessagesProps {
   setTempHumanMessageToNull: () => void;
   scrollToBottom: () => void;
   scrollContainer: HTMLElement | null;
+  isPending?: boolean; // Add this prop to track sending state
 }
 
-export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNull, scrollToBottom, scrollContainer}: ChatMessagesProps) {
+export default function ChatMessages({
+  tempHumanMessage, 
+  setTempHumanMessageToNull, 
+  scrollToBottom, 
+  scrollContainer,
+  isPending = false
+}: ChatMessagesProps) {
     const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
     const [userHasScrolled, setUserHasScrolled] = useState(false);
     const [lastMessageCount, setLastMessageCount] = useState(0);
@@ -41,22 +49,48 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
 
     const router = useRouter();
 
+    const shouldShowTempMessage = useMemo(() => {
+        if (!tempHumanMessage) return false;
+        
+        const messageExists = humanMessages.some(msg => 
+            msg.content?.trim() === tempHumanMessage.trim()
+        );
+        
+        return !messageExists;
+    }, [tempHumanMessage, humanMessages]);
+
+    // Immediate cleanup when real message appears
+    const clearTempMessageIfNeeded = useCallback(() => {
+        if (tempHumanMessage && !shouldShowTempMessage) {
+            setTempHumanMessageToNull();
+        }
+    }, [tempHumanMessage, shouldShowTempMessage, setTempHumanMessageToNull]);
+
+    useEffect(() => {
+        clearTempMessageIfNeeded();
+    }, [clearTempMessageIfNeeded]);
+
+    // Auto-scroll effect
     useEffect(() => {
       const currentMessageCount = humanMessages.length + aiMessages.length;
       
-      if (currentMessageCount > lastMessageCount || !userHasScrolled) {
-        setTimeout(() => scrollToBottom(), 100);
-        setUserHasScrolled(false); 
+      // Scroll if new messages added, temp message exists, or user hasn't scrolled
+      if (currentMessageCount > lastMessageCount || tempHumanMessage || !userHasScrolled) {
+        setTimeout(() => scrollToBottom(), 50);
+        if (currentMessageCount > lastMessageCount) {
+          setUserHasScrolled(false); 
+        }
       }
       
       setLastMessageCount(currentMessageCount);
-    }, [aiMessages, humanMessages]); 
+    }, [aiMessages, humanMessages, tempHumanMessage, scrollToBottom, lastMessageCount, userHasScrolled]); 
     
+    // Scroll detection
     useEffect(() => {
       const handleScroll = () => {
         if (scrollContainer) {
           const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-          const isNearBottom = scrollHeight - scrollTop - clientHeight < 100; // 100px threshold
+          const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
           
           if (!isNearBottom) {
             setUserHasScrolled(true);
@@ -64,17 +98,19 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
         }
       };
 
-      const scrollContainer = document.getElementById('chat-container');
-      if (scrollContainer) {
-        scrollContainer.addEventListener('scroll', handleScroll);
-        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      const container = scrollContainer || document.getElementById('chat-container');
+      if (container) {
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
       }
-    }, []);
+    }, [scrollContainer]);
 
+    // Initial data loading
     useEffect(() => {
-        const hanldleReload = async () => {
+        const handleReload = async () => {
             const accessToken = localStorage.getItem("access_token");
             setIsLoadingChatsMessage(true);
+            
             try {
                 if (!accessToken || accessToken === "") {
                     throw new Error("Not authenticated");
@@ -97,7 +133,7 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
                 } else if(currentChat !== null) {
                     await loadAIMessagesFromChat(currentChat.chatId, accessToken);
                     await loadHumanMessagesFromChat(currentChat.chatId, accessToken);
-                }else {
+                } else {
                     localStorage.removeItem("currentChat");
                     setCurrentChatToNull();
                     setTempHumanMessageToNull();
@@ -110,11 +146,11 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
                 router.push("/auth/login");
                 console.log(e);
             } finally {
-              setIsLoadingChatsMessage(true);
+              setIsLoadingChatsMessage(false);
             }
         }
 
-        hanldleReload();
+        handleReload();
     }, [])
 
     const handleClickHumanMessage = async (humanMessage: HumanMessageResponseSchema) => {
@@ -136,86 +172,90 @@ export default function ChatMessages({tempHumanMessage, setTempHumanMessageToNul
       }
     }
 
- return (
-    <div className="flex-1 flex flex-col items-center justify-start mx-[10%] h-full max-w-2xl px-2">
-      {humanMessages.length > 0 && aiMessages.length > 0 ? (
-        <div className="w-full space-y-8">
-          {humanMessages.map((value, index) => (
-            <div key={index} className="w-full">
-              <HumanMessage humanMessage={value} handleClickHumanMessage={handleClickHumanMessage} />
+    return (
+        <div className="flex-1 flex flex-col items-center justify-start mx-[10%] h-full max-w-2xl px-2">
+            {(humanMessages.length > 0 && aiMessages.length > 0) || shouldShowTempMessage ? (
+                <div className="w-full space-y-8">
+                    {/* Existing messages */}
+                    {humanMessages.map((value, index) => (
+                        <div key={`message-${value.id || index}`} className="w-full">
+                            <HumanMessage humanMessage={value} handleClickHumanMessage={handleClickHumanMessage} />
+                            {aiMessages[index] && (
+                                <AIMessage aiMessages={aiMessages} index={index} />
+                            )}
+                            {index < humanMessages.length - 1 && (
+                                <div className="flex justify-center my-8">
+                                    <div className="w-16 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent"></div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
 
-              {aiMessages[index] && (
-                <AIMessage aiMessages={aiMessages} index={index} />
-              )}
-
-              {index < humanMessages.length - 1 && (
-                <div className="flex justify-center my-8">
-                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent"></div>
-                </div>
-              )}
-            </div>
-          ))}
-
-          {tempHumanMessage && (
-              <div className="w-full mb-52">
-                <div className="flex justify-end mb-4">
-                    <div className="max-w-[85%] group">
-                        <div className="flex items-start justify-end mb-2">
-                        <div className="mr-3">
-                            <div className="text-xs text-purple-600 font-medium mb-1 text-right">You</div>
-                            <div 
-                            className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-2xl rounded-tr-md shadow-lg hover:shadow-xl transition-all duration-200  hover:cursor-pointer hover:from-purple-700 hover:to-purple-800"
-                            >
-                            <div className="font-medium leading-relaxed">
-                                {tempHumanMessage}
+                    {/* Temporary message */}
+                    {shouldShowTempMessage && (
+                        <div className="w-full mb-8">
+                            <div className="flex justify-end mb-4">
+                                <div className="max-w-[85%] group">
+                                    <div className="flex items-start justify-end mb-2">
+                                        <div className="mr-3">
+                                            <div className="text-xs text-purple-600 font-medium mb-1 text-right">You</div>
+                                            <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-2xl rounded-tr-md shadow-lg opacity-90">
+                                                <div className="font-medium leading-relaxed">
+                                                    {tempHumanMessage}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-center items-center border-white border-2 rounded-full bg-purple-800 text-white w-8 h-8">
+                                            {"john".charAt(0).toUpperCase()}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            
+                            {isPending && (
+                                <div className="flex items-center space-x-2 ml-4 mt-4">
+                                    <div className="flex justify-center items-center border-gray-300 border-2 rounded-full bg-white w-8 h-8">
+                                        <Bot className="w-4 h-4 text-purple-600" />
+                                    </div>
+                                    <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-md px-6 py-4 shadow-sm">
+                                        <div className="flex items-center space-x-2">
+                                            <svg className="animate-spin h-4 w-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span className="text-sm text-gray-600">Thinking...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="text-center py-12 text-gray-500 w-full h-full flex flex-col items-center justify-center">
+                    {isLoadingChatsMessages ? (
+                        <MessagesLoadingComponent />
+                    ) : (
+                        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-3xl border border-purple-100 shadow-sm">
+                            <div className="bg-gradient-to-r from-purple-400 to-indigo-500 p-4 rounded-2xl inline-block mb-4">
+                                <MessageSquarePlus className="w-8 h-8 text-white" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">Start a Conversation</h3>
+                            <p className="text-gray-500 max-w-sm">
+                                Ask me anything about the docs you send to me! I'm here to help you with information, analysis...
+                            </p>
+                            <div className="mt-6 flex flex-wrap justify-center gap-2">
+                                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                    Questions
+                                </span>
+                                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                                    Analysis
+                                </span>   
                             </div>
                         </div>
-                          <div className={`flex justify-center items-center border-white border-2 rounded-4xl  bg-purple-800 text-white w-8 h-8`}>
-                              {"john".charAt(0).toUpperCase()}
-                          </div>
-                        </div>
-                    </div>
+                    )}
                 </div>
-                <div>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-              </div>
             )}
         </div>
-      ) : (
-        <div className="text-center py-12 text-gray-500 w-full h-full flex flex-col items-center justify-center">
-          {
-            isLoadingChatsMessages ? (
-              <>
-                <MessagesLoadingComponent />
-              </>
-            ) : (
-              <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-3xl border border-purple-100 shadow-sm">
-                <div className="bg-gradient-to-r from-purple-400 to-indigo-500 p-4 rounded-2xl inline-block mb-4">
-                  <MessageSquarePlus className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Start a Conversation</h3>
-                <p className="text-gray-500 max-w-sm">
-                  Ask me anything about the docs you send to me! I'm here to help you with information, analysis...
-                </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                    Questions
-                  </span>
-                  <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                    Analysis
-                  </span>   
-                </div>
-              </div>
-            )
-          }
-        </div>
-      )
-      }
-    </div>
-  );
+    );
 }

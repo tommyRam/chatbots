@@ -34,7 +34,7 @@ export default function HeaderMain() {
     }, [])
 
     return (
-        <div className="flex items-center justify-between w-full bg-gradient-to-b h-14 bg-white px-7 border-b-2 border-purple-800">
+        <div className="flex items-center justify-between w-full bg-gradient-to-b h-14 bg-white px-7 border-b-2 border-purple-400">
             <div></div>
            {
             currentChat && (

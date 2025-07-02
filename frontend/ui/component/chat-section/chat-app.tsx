@@ -45,25 +45,35 @@ export default function Chat() {
     }
 
     const handleSendQuery = async () => {
-        scrollToBottom();
+        if (!inputValue.trim()) {
+            return;
+        }
+
         setTempHumanMessage(inputValue);
+        setInputValue("");
         const accessToken = localStorage.getItem("access_token") || "";
+
+        if(accessToken === "") {
+            router.push("/auth/login");
+            setTempHumanMessageToNull();
+            return;
+        }
+
         setIsPending(true);
+
+        setTimeout(() => scrollToBottom(), 100);
         
         try {
-            if(accessToken === "") {
-                router.push("/auth/login");
-                setTempHumanMessageToNull();
-                throw new Error("Missing access token");
-            }
 
             if(currentChat && currentChat.chatId){
                 const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken, currentRagTechnic.enpoint);
                 if(response.chatMessage) {
-                    const humanMessage = await loadLatestHumanMessageFromChat(currentChat.chatId, accessToken);
-                    await loadLatestAIMessageFromChat(currentChat.chatId, accessToken);
-                    await loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken);
-                    setInputValue("");
+                    await Promise.all([
+                        loadLatestAIMessageFromChat(currentChat.chatId, accessToken),
+                        loadLatestHumanMessageFromChat(currentChat.chatId, accessToken).then(humanMessage => 
+                            loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken)
+                        )
+                    ]);
                     setTempHumanMessageToNull();
                 }
             }else {
@@ -109,7 +119,9 @@ export default function Chat() {
                     tempHumanMessage={tempHumanMessage} 
                     setTempHumanMessageToNull={setTempHumanMessageToNull} 
                     scrollToBottom={scrollToBottom} 
-                    scrollContainer={chatContainer}/>
+                    scrollContainer={chatContainer}
+                    isPending={isPending}
+                    />
             </div>
             <div className="w-[100%] h-28 flex justify-center items-center ">
                 <ChatInput

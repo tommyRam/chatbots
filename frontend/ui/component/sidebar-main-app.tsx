@@ -66,7 +66,7 @@ export default function SideBarMain () {
                 bg-white transition-all duration-300 ease-in-out
                 flex flex-col shadow-sm 
                 items-center
-                border-r-4 border-gray-400
+                border-r-2 border-gray-400
             `}
         >
             <div 
@@ -126,30 +126,52 @@ export default function SideBarMain () {
                    {
                     !isCollapsed && 
                     <>
-                        <div className="font-bold text-xs text-gray-700">
-                            Recents chat
-                        </div>
-                        <div className="mt-1">
-                            {
-                                chats && (
-                                    chats.map((value, index) => {
-                                        return (
-                                            <div 
-                                                onClick={() => handleSetCurrentChat(index)}
-                                                key={value.chatId} 
-                                                className={`flex items-center justify-between my-2 py-1.5 px-1.5 hover:cursor-pointer rounded-lg ${currentChat?.chatId === value.chatId ? "bg-purple-900 hover:bg-purple-800" : "bg-white hover:bg-purple-50 "}`}
-                                            >
-                                                <div className={`overflow-hidden font-bold  ${currentChat?.chatId === value.chatId ? "text-white" : "text-gray-500"}`}>
-                                                    {capitalizeFirstLetter(value.chatName)}
-                                                </div>
-                                                <div className="flex items-center justify-center rounded-md hover:cursor-pointer hover:border-[0.5px] border-gray-600 w-7 h-7">
-                                                    <TrashIcon  className={`hover:text-purple-950 h-4 w-4 hover:h-3.5 hover:w-3.5 ${currentChat?.chatId === value.chatId ? "text-white" : "text-gray-500" }`}/>
-                                                </div>                                                               
-                                            </div>
-                                        )
-                                    })
-                                )
-                            }
+                        <div className="space-y-2">
+                            <div className="flex items-center space-x-2 px-2">
+                                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <h3 className="text-sm font-semibold text-gray-700">RECENT CHATS</h3>
+                            </div>
+                            
+                            <div className="space-y-1">
+                                {chats?.map((chat, index) => (
+                                    <div 
+                                        key={chat.chatId}
+                                        onClick={() => handleSetCurrentChat(index)}
+                                        className={`
+                                            group relative flex items-center px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200
+                                            ${currentChat?.chatId === chat.chatId 
+                                                ? "bg-purple-600 text-white shadow-sm" 
+                                                : "text-gray-700 hover:bg-purple-50 border border-transparent hover:border-purple-100"
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`
+                                                text-sm font-medium truncate
+                                                ${currentChat?.chatId === chat.chatId ? "text-white" : "text-gray-800"}
+                                            `}>
+                                                {capitalizeFirstLetter(chat.chatName)}
+                                            </p>
+                                        </div>
+                                        
+                                        <div className={`
+                                            ml-2 transition-opacity duration-200
+                                            ${currentChat?.chatId === chat.chatId 
+                                                ? "opacity-100" 
+                                                : "opacity-0 group-hover:opacity-60"
+                                            }
+                                        `}>
+                                            {currentChat?.chatId === chat.chatId ? (
+                                                <div className="w-2 h-2 bg-white rounded-full"></div>
+                                            ) : (
+                                                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </>
                    }
