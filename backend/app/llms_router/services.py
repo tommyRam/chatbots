@@ -20,6 +20,7 @@ from .utils.formatters import (
 
 from .schemas import ChatMessageResponse
 from .utils.prompts import prompts, stepback_RAG_prompt_examples
+from .utils.c_rag.corrective_rag_grap_construction import app
 
 _ = load_dotenv(find_dotenv())
 
@@ -55,7 +56,7 @@ async def simple_RAG(
         raise FileNotFoundError(e)
     except Exception as exception:
         print(f"An error was occured on simple_RAG_service: {exception}")
-        raise
+        raise exception
 
 async def multi_query_RAG(
         question: str, 
@@ -93,7 +94,7 @@ async def multi_query_RAG(
         return response
     except Exception as e:
         print(f"An error was occured: {e}")
-        raise
+        raise e
 
 async def fusion_RAG(
         question: str, 
@@ -137,7 +138,7 @@ async def fusion_RAG(
         return response
     except Exception as e:
         print(f"An error was occured: {e}")
-        raise
+        raise e
 
 async def decomposition_RAG(
         question: str, 
@@ -188,7 +189,7 @@ async def decomposition_RAG(
         return response
     except Exception as e:
         print(f"An error was occured: {e}")
-        raise
+        raise e
 
 async def stepback_RAG(
     question: str,
@@ -280,7 +281,21 @@ async def hyDe_RAG(
         print(f"An error was occured: {e}")
         raise e
 
+async def corrective_RAG(
+        question: str,
+        chat_id: str
+):
+    try:
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+        relevant_docs = vectorestore.similarity_search_with_score(query=question)  
 
+        c_rag_graph_response = app.invoke({"question": question, "documents": relevant_docs})
+        relevant_docs_contents = format_docs_list(c_rag_graph_response["documents"])
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=c_rag_graph_response["generation"])
+        return response
+    except Exception as exception:
+        print(f"An error was occured on simple_RAG_service: {exception}")
+        raise exception
 
 
 
