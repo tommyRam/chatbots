@@ -2,8 +2,7 @@ tomorrow:
   Refactoring
   front: - add code
       - fix user profile on human message.
-  backend: - add all rags
-          - create agentic rag
+  backend: - CRAG, Adaptive RAG, Agentic Rag
           - add new features (RAG evaluation)
 
 - Frontend:

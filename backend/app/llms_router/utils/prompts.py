@@ -53,7 +53,16 @@ prompts = {
     # Original Question: {question}
     # Answer:""",
 
-    
+    "hyDe_RAG_query": """Please write a scientific paper passage to answer the question
+    Question: {question}
+    Passage:""",
+
+    "hyDe_RAG_template": """Answer the following question based on this context:
+
+    {context}
+
+    Question: {question}
+    """,
 }
 
 # It is used as an example used as a few shots

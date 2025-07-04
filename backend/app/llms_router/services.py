@@ -245,6 +245,40 @@ async def stepback_RAG(
     except Exception as e:
         print(f"An error was occured: {e}")
         raise e
+    
+# Hypothetical Document RAG
+async def hyDe_RAG(
+    question: str,
+    chat_id: str
+):
+    try:
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+
+        generate_paper_hyde_prompt = ChatPromptTemplate.from_template(prompts["hyDe_RAG_query"])
+        generate_docs_for_retrieval_chain = (
+            generate_paper_hyde_prompt 
+            | llm
+            | StrOutputParser()
+        )
+        generated_paper_ways_from_question = generate_docs_for_retrieval_chain.invoke({"question": question})
+        relevant_docs = vectorestore.similarity_search_with_score(query=generated_paper_ways_from_question)
+        relevant_docs_contents = format_docs_list(relevant_docs)
+        formatted_relevant_docs_into_one_long_string = format_docs(relevant_docs)  
+
+        hyde_prompt_template = prompts["formatting_instructions"]  + "\n\n" + prompts["hyDe_RAG_template"]
+        hyde_prompt = ChatPromptTemplate.from_template(hyde_prompt_template)
+
+        hyde_rag_chain = (
+            hyde_prompt
+            | llm
+            | StrOutputParser()
+        )
+        chat_response = hyde_rag_chain.invoke({"context": formatted_relevant_docs_into_one_long_string, "question": question})
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=chat_response)
+        return response
+    except Exception as e:
+        print(f"An error was occured: {e}")
+        raise e
 
 
 
