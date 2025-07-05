@@ -86,3 +86,4 @@ c_rag_prompts = {
         for web search. Look at the input and try to reason about the underlyig semantic intent/meaning. Your response must be at most 380 characters""",
 
 }
+
