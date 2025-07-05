@@ -47,14 +47,14 @@ interface ChatSchema {
     chatId: string; 
     userId: string;
     chatName: string;
-    documentId: string;
+    // documentId: string;
 }
 
 interface BackendchatSchema {
     chat_id: string;
     user_id: string;
     chat_name: string;
-    document_id: string;
+    // document_id: string;
 }
 
 interface AIMessageResponseSchema {

@@ -4,12 +4,11 @@ import Button from "@/ui/reusable_component/button";
 import AuthInputForm from "@/ui/reusable_component/auth-input-form";
 import Link from "next/link";
 import UseRegisterForm from "@/hooks/use-register-form";
-import { ChangeEvent, useTransition, useState, FormEvent, startTransition } from "react";
+import { ChangeEvent, useState, FormEvent } from "react";
 import { RegisterFormData } from "@/types/auth";
 import { getCurrentUser, register } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
 import { getUserChatList } from "@/api/chat-api";
-import { Database } from "lucide-react";
 
 type RegisterFormDataField = keyof RegisterFormData;
 
@@ -56,6 +55,8 @@ export default function Register() {
             } finally {
                 setIsPending(false);
             }
+        } else {
+            setIsPending(false);
         }
     }
 
