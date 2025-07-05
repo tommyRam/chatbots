@@ -1,23 +1,38 @@
 export const allRagTechnicsConstant: RagTypeSchema[] = [
     {
         displayName: "Simple RAG",
-        enpoint: "/api/RAG/simpleRAG"
+        endpoint: "/api/RAG/simpleRAG",
+        notebookName: "simpleRAG"
     },
     {
         displayName: "Multi query RAG",
-        enpoint: "/api/RAG/multiQueryRAG"
+        endpoint: "/api/RAG/multiQueryRAG",
+        notebookName: "multiQueryRAG"
     },
     {
         displayName: "Fusion RAG",
-        enpoint: "/api/RAG/fusionRAG"
+        endpoint: "/api/RAG/fusionRAG",
+        notebookName: "fusionRAG"
     },
     {
         displayName: "Decomposition RAG",
-        enpoint: "/api/RAG/decompositionRAG"
+        endpoint: "/api/RAG/decompositionRAG",
+        notebookName: "decompositionRAG"
     }, 
     {
+        displayName: "Stepback RAG",
+        endpoint: "/api/RAG/stepbackRAG",
+        notebookName: "stepbackRAG"
+    },
+    {
+        displayName: "HyDe RAG",
+        endpoint: "/api/RAG/hyDeRAG",
+        notebookName: "hyDeRAG"
+    },
+    {
         displayName: "Corrective RAG",
-        enpoint: "/api/RAG/CRAG"
+        endpoint: "/api/RAG/CRAG",
+        notebookName: "correctiveRAG"
     }
 ];
 

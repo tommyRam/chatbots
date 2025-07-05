@@ -66,7 +66,7 @@ export default function Chat() {
         try {
 
             if (currentChat && currentChat.chatId) {
-                const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken, currentRagTechnic.enpoint);
+                const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken, currentRagTechnic.endpoint);
                 if (response.chatMessage) {
                     await Promise.all([
                         loadLatestAIMessageFromChat(currentChat.chatId, accessToken),
