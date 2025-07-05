@@ -113,7 +113,7 @@ export default function SideBarMain() {
                         text-gray-600 hover:text-white
                         hover:cursor-pointer
                         rounded-lg
-                        shadow-inner shadow-purple-100 hover:shadow-none
+                        shadow-purple-100 hover:shadow-none shadow-sm
                         flex items-center justify-center gap-2
                         font-medium
                         `}
@@ -129,7 +129,7 @@ export default function SideBarMain() {
                             <div className="space-y-2">
                                 <div className="flex items-center space-x-2 px-2">
                                     <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                    <h3 className="text-sm font-semibold text-gray-700">RECENT CHATS</h3>
+                                    <h3 className="text-lg font-semibold text-gray-700">RECENT CHATS</h3>
                                 </div>
 
                                 <div className="space-y-1">
@@ -147,8 +147,8 @@ export default function SideBarMain() {
                                         >
                                             <div className="flex-1 min-w-0">
                                                 <p className={`
-                                                text-sm font-medium truncate
-                                                ${currentChat?.chatId === chat.chatId ? "text-white" : "text-gray-800"}
+                                                text-sm font-semibold truncate
+                                                ${currentChat?.chatId === chat.chatId ? "text-white" : "text-gray-600"}
                                             `}>
                                                     {capitalizeFirstLetter(chat.chatName)}
                                                 </p>

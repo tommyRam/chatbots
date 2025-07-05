@@ -52,7 +52,7 @@ export default function ChatHeader() {
             <div className="relative w-52" ref={ragTypeRef}>
                 <div
                     onClick={() => setShowAllRAGModal(!showAllRAGModals)}
-                    className="flex items-center justify-between space-x-1.5 border border-gray-50 shadow-md  rounded-md pl-3 px-2.5 hover:cursor-pointer"
+                    className="flex items-center justify-between space-x-1.5 border border-gray-50 shadow-sm  rounded-md pl-3 px-2.5 hover:cursor-pointer"
                 >
                     <div className="font-medium leading-relaxed w-[90%] truncate" title={currentRagTechnic.displayName}>
                         {currentRagTechnic.displayName}
