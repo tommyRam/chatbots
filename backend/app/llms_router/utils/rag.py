@@ -1,4 +1,5 @@
 import os
+
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 from langchain_community.document_loaders import (
@@ -14,11 +15,16 @@ from langchain_community.vectorstores import Chroma
 from fastapi import UploadFile
 from typing import List
 import tempfile
-from datetime import datetime
+from datetime import datetime, time
 from dotenv import load_dotenv, find_dotenv
+import sqlalchemy.orm as orm
+from more_itertools import chunked
 
 from config import settings
+from ..schemas import ChatMessageResponse, UserRequest
+from chat_router.services import add_ai_message_to_db, add_human_message_to_db, add_retrieved_documents_to_db
 
+MAX_BATCH_SIZE = 50
 
 _ = load_dotenv(find_dotenv())
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -85,6 +91,7 @@ def upload_data_to_vectorestore(
         score_threshold: int = 0.4,
         k: int = 3
     ):
+    print("====================Uploading to pinecone==========================")
     try:
         pc = Pinecone(api_key=settings.PINECONE_API_KEY)
         index = pc.Index(settings.PINECONE_INDEX_NAME)
@@ -92,12 +99,14 @@ def upload_data_to_vectorestore(
 
         docs = load_data_from_uploads(uploaded_file=uploaded_files)
         splitter = make_splitter(chunk_size=1000, chunk_overlap=200)
-        docs_spits = splitter.split_documents(docs)
+        docs_splits = splitter.split_documents(docs)
 
-        vectorestore.add_documents(documents=docs_spits)
+        for batch in chunked(docs_splits, MAX_BATCH_SIZE):
+            vectorestore.add_documents(documents=batch)
     except Exception as e:
         print(f"Error creating retriever: {str(e)}")
-        raise
+        raise e
+
 
 def get_vectorestore_from_namespace(
         embedding, 
@@ -110,3 +119,8 @@ def get_vectorestore_from_namespace(
     index = pc.Index(settings.PINECONE_INDEX_NAME)
     vectorestore = PineconeVectorStore(index=index, embedding=embedding, namespace=namespace)
     return vectorestore
+
+def add_human_ai_messages_and_documents_to_db(response: ChatMessageResponse, request: UserRequest, algorithm: str, db: orm.Session):
+    human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query, db=db)
+    add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
+    add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm=algorithm, db=db)

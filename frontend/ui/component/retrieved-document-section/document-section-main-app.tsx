@@ -6,7 +6,7 @@ import DocHeader from "./doc-header";
 import RAGCode from "./rag-code";
 
 export default function DocumentMain() {
-    const [showRetrievedDocuments, setShowRetrievedDocuments] = useState<boolean>(false);
+    const [showRetrievedDocuments, setShowRetrievedDocuments] = useState<boolean>(true);
 
     return (
         <div className="h-full w-full flex flex-col ">

@@ -77,7 +77,7 @@ export default function RetrievedDocuments({ documents, humanMessage }: Retrieve
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col w-full">
       <div className="sticky top-0 z-10 bg-white">
         <div className="px-4 pt-3">
           <div className="flex flex-col justify-center mb-6">

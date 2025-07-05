@@ -5,7 +5,8 @@ from operator import itemgetter
 from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, FewShotChatMessagePromptTemplate
+from langchain_core.runnables import RunnableLambda
 
 
 from config import settings
@@ -18,7 +19,8 @@ from .utils.formatters import (
     format_qa_pair)
 
 from .schemas import ChatMessageResponse
-from .utils.prompts import prompts
+from .utils.prompts import prompts, stepback_RAG_prompt_examples
+from .utils.c_rag.corrective_rag_grap_construction import app
 
 _ = load_dotenv(find_dotenv())
 
@@ -54,7 +56,7 @@ async def simple_RAG(
         raise FileNotFoundError(e)
     except Exception as exception:
         print(f"An error was occured on simple_RAG_service: {exception}")
-        raise
+        raise exception
 
 async def multi_query_RAG(
         question: str, 
@@ -92,7 +94,7 @@ async def multi_query_RAG(
         return response
     except Exception as e:
         print(f"An error was occured: {e}")
-        raise
+        raise e
 
 async def fusion_RAG(
         question: str, 
@@ -136,7 +138,7 @@ async def fusion_RAG(
         return response
     except Exception as e:
         print(f"An error was occured: {e}")
-        raise
+        raise e
 
 async def decomposition_RAG(
         question: str, 
@@ -187,8 +189,113 @@ async def decomposition_RAG(
         return response
     except Exception as e:
         print(f"An error was occured: {e}")
-        raise
+        raise e
 
+async def stepback_RAG(
+    question: str,
+    chat_id: str
+):
+    try: 
+        example_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("human", "{input}"),
+                ("ai", "{output}")
+            ]
+        )
+        few_shot = FewShotChatMessagePromptTemplate(
+            example_prompt=example_prompt,
+            examples=stepback_RAG_prompt_examples
+        )
+        generate_stepback_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", prompts["stepback_rag_generate_query"]),
+                few_shot,
+                ("user", "{question}")
+            ]
+        )
+
+        generate_queries_step_back_chain = generate_stepback_prompt | llm | StrOutputParser()
+        new_question_from_step_back = generate_queries_step_back_chain.invoke({"question": question})
+
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+        relevant_docs_from_original_question = vectorestore.similarity_search_with_score(query=question)
+        relevant_docs_from_step_back_question = vectorestore.similarity_search_with_score(query=new_question_from_step_back)
+
+        relevant_docs_contents = format_docs_list(relevant_docs_from_original_question + relevant_docs_from_step_back_question)
+
+        formatted_relevant_docs_into_one_long_string_from_original_question = format_docs(relevant_docs_from_original_question)
+        formatted_relevant_docs_into_one_long_string_from_stepback_question = format_docs(relevant_docs_from_step_back_question)
+
+        response_prompt_template = prompts["formatting_instructions"]  + "\n\n" + prompts["stepback_rag_template"]
+        response_prompt = ChatPromptTemplate.from_template(response_prompt_template)
+
+        chain = (
+            response_prompt
+            | llm 
+            | StrOutputParser()
+        )
+
+        chat_response = chain.invoke({
+            "normal_context": formatted_relevant_docs_into_one_long_string_from_original_question,
+            "step_back_context": formatted_relevant_docs_into_one_long_string_from_stepback_question,
+            "question": question
+        })
+
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=chat_response)
+        return response
+    except Exception as e:
+        print(f"An error was occured: {e}")
+        raise e
+    
+# Hypothetical Document RAG
+async def hyDe_RAG(
+    question: str,
+    chat_id: str
+):
+    try:
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+
+        generate_paper_hyde_prompt = ChatPromptTemplate.from_template(prompts["hyDe_RAG_query"])
+        generate_docs_for_retrieval_chain = (
+            generate_paper_hyde_prompt 
+            | llm
+            | StrOutputParser()
+        )
+        generated_paper_ways_from_question = generate_docs_for_retrieval_chain.invoke({"question": question})
+        relevant_docs = vectorestore.similarity_search_with_score(query=generated_paper_ways_from_question)
+        relevant_docs_contents = format_docs_list(relevant_docs)
+        formatted_relevant_docs_into_one_long_string = format_docs(relevant_docs)  
+
+        hyde_prompt_template = prompts["formatting_instructions"]  + "\n\n" + prompts["hyDe_RAG_template"]
+        hyde_prompt = ChatPromptTemplate.from_template(hyde_prompt_template)
+
+        hyde_rag_chain = (
+            hyde_prompt
+            | llm
+            | StrOutputParser()
+        )
+        chat_response = hyde_rag_chain.invoke({"context": formatted_relevant_docs_into_one_long_string, "question": question})
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=chat_response)
+        return response
+    except Exception as e:
+        print(f"An error was occured: {e}")
+        raise e
+
+async def corrective_RAG(
+        question: str,
+        chat_id: str
+):
+    try:
+        vectorestore = get_vectorestore_from_namespace(embedding=embedding, namespace=chat_id)
+        relevant_docs = vectorestore.similarity_search_with_score(query=question)  
+
+        c_rag_graph_response = app.invoke({"question": question, "documents": relevant_docs})
+        relevant_docs_contents = format_docs_list(c_rag_graph_response["documents"])
+        response = ChatMessageResponse(documents=relevant_docs_contents, chat_response=c_rag_graph_response["generation"])
+        return response
+    except Exception as exception:
+        print(f"An error was occured on simple_RAG_service: {exception}")
+        raise exception
 
 
 

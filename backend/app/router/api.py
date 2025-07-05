@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Depends
 import sqlalchemy.orm as orm
 from fastapi.security import OAuth2PasswordRequestForm
+import os
 
 from .schemas import TokenResponse, RegisterUserRequest, LoginUserRequest, UserResponse, UserSchema
 from .crud import get_user_by_email, get_user_by_username
@@ -94,3 +95,26 @@ async def login_user(
 @router.get("/auth/current-user", response_model=UserResponse)
 async def get_current_user(user: UserResponse = Depends(current_user)):
     return user
+
+@router.get("/api/rag/{technique_name}")
+async def get_rag_notebook(technique_name: str, user: LoginUserRequest = Depends(current_user)):
+    filename = f"{technique_name}.ipynb"
+    NOTEBOOK_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../llms-services"))
+    filepath = os.path.join(NOTEBOOK_DIR, filename)
+
+    print(f"Filepath ==> {filepath}")
+
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail=f"Notebook '{filename}' not found")
+    
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            notebook_content = f.read()
+        
+        return {
+            "technique": technique_name,
+            "filename": filename,
+            "content": notebook_content
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading notebook: {str(e)}")

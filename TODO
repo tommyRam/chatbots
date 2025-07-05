@@ -1,9 +1,9 @@
 tomorrow: 
   Refactoring
-  front: documents
-
-  Bugs: - Display directly the human message after the submit.
-
+  front: - add code
+      - fix user profile on human message.
+  backend: - CRAG, Adaptive RAG, Agentic Rag
+          - add new features (RAG evaluation)
 
 - Frontend:
     - route management

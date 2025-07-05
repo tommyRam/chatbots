@@ -24,11 +24,14 @@ export default function Chat() {
 
     const {
         currentChat,
+        aiMessages,
+        humanMessages,
+        errorMessageOnQuery,
         sendMessage,
         loadLatestAIMessageFromChat,
         loadLatestHumanMessageFromChat,
-        aiMessages,
-        humanMessages
+        handleClearErrorMessageOnQuery,
+        handleChangeErrorMessageOnQuery
     } = useChat();
 
     const {
@@ -51,6 +54,7 @@ export default function Chat() {
 
         setTempHumanMessage(inputValue);
         setInputValue("");
+        handleClearErrorMessageOnQuery();
         const accessToken = localStorage.getItem("access_token") || "";
 
         if (accessToken === "") {
@@ -66,7 +70,7 @@ export default function Chat() {
         try {
 
             if (currentChat && currentChat.chatId) {
-                const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken, currentRagTechnic.enpoint);
+                const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken, currentRagTechnic.endpoint);
                 if (response.chatMessage) {
                     await Promise.all([
                         loadLatestAIMessageFromChat(currentChat.chatId, accessToken),
@@ -82,11 +86,13 @@ export default function Chat() {
             }
         } catch (e) {
             console.log(e);
-            throw e;
+            const message = (e instanceof Error ? e.message : "Error from server, please try again!") + ". Your last query will be deleted soon!!";
+            handleChangeErrorMessageOnQuery(message);
+            // throw e;
         } finally {
             setIsPending(false);
             setInputValue("");
-            setTempHumanMessageToNull();
+            setTimeout(() => setTempHumanMessageToNull(), 6000);
         }
     }
 
@@ -121,6 +127,7 @@ export default function Chat() {
                     scrollToBottom={scrollToBottom}
                     scrollContainer={chatContainer}
                     isPending={isPending}
+                    errorMessage={errorMessageOnQuery}
                 />
             </div>
             <div className="w-[100%] h-28 flex justify-center items-center ">

@@ -2,8 +2,8 @@
 
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Upload, Plus, ChevronRight } from 'lucide-react';
 
-import { Upload, Plus } from 'lucide-react';
 import Button from "@/ui/reusable_component/button";
 import { createNewChat } from "@/api/chat-api";
 import { transformChatResponse } from "@/utils/transformers";
@@ -26,29 +26,29 @@ export default function CreateChat() {
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         setChatName(e.target.value);
-        console.log("chat name:" + chatName);
-    }
+    };
 
     const handleUploadFile = (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         const files = e.target.files ? e.target.files : new FileList();
-
         setSelectedFiles(files);
-        console.log("selected files:" + selectedFiles);
-    }
+    };
 
     const handleSubmit = async (e: FormEvent<HTMLElement>): Promise<void> => {
         e.preventDefault();
         setIsPending(true);
         setCreatingChatError(null);
+
         try {
             const user_data = JSON.parse(localStorage.getItem("user_data") || "");
-
-            if (user_data === "" || user_data === null) {
-                router.push("auth/login")
-            }
+            if (!user_data) router.push("auth/login");
 
             const accessToken = localStorage.getItem("access_token");
+            if (!accessToken) {
+                router.push("auth/login");
+                throw new Error("Expired credentials");
+            }
+
             const formData = new FormData();
             formData.append("user_id", user_data.id);
             formData.append("chat_name", chatName);
@@ -57,12 +57,9 @@ export default function CreateChat() {
                 formData.append("uploaded_files", selectedFiles[i]);
             }
 
-            if (!accessToken) {
-                router.push("auth/login");
-                throw new Error("Expired credentials");
-            }
-            const newChat: BackendchatSchema = await createNewChat(formData, accessToken, "/api/chat/create");
-            const newChatFormatted: ChatSchema = transformChatResponse(newChat);
+            const newChat = await createNewChat(formData, accessToken, "/api/chat/create");
+            const newChatFormatted = transformChatResponse(newChat);
+
             localStorage.setItem("currentChat", JSON.stringify(newChatFormatted));
             handleChangeCurrentChat(newChatFormatted);
             await loadChats(user_data.id, accessToken);
@@ -75,22 +72,20 @@ export default function CreateChat() {
                 router.push(`/main/chat/${newChatFormatted.chatId}`);
             }, 3000);
         } catch (e) {
-            console.log(e)
             localStorage.removeItem("currentChat");
             setCurrentChatToNull();
-            setCreatingChatError(JSON.stringify(e));
-
+            setCreatingChatError("An error occurred while creating the chat.");
             setIsCreatingNewChatSuccess(false);
             setShowCreatingChatModal(true);
 
-            setTimeout(() => { setShowCreatingChatModal(false) }, 3000);
+            setTimeout(() => setShowCreatingChatModal(false), 3000);
         } finally {
             setIsPending(false);
         }
-    }
+    };
 
     return (
-        <div className="h-full flex justify-center items-center">
+        <div className="min-h-screen bg-white text-gray-900 px-4 py-12">
             {
                 showCreatingChatModal && (
                     isCreatingNewChatSuccess ? (
@@ -100,67 +95,97 @@ export default function CreateChat() {
                     )
                 )
             }
-            <div className="flex flex-col items-center max-w-lg w-[60%] h-[45%] rounded-lg bg-purple-50 p-2.5">
-                <div className="flex items-center justify-center text-2xl font-bold text-gray-600">
-                    <Plus className="h-7 w-7 mx-2 border-purple-500 border-2 bg-purple-400 text-white rounded-full" />
-                    Create new chat
+            <div className="max-w-6xl mx-auto px-4 pb-6">
+                <div className="text-center mb-9">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-4">How It Works</h2>
+                    <p className="text-gray-600">Upload documents and chat with your data</p>
                 </div>
-                <div className="flex-1 flex justify-center w-full h-full pt-5">
-                    <form
-                        className="ml-14"
-                        onSubmit={handleSubmit}>
-                        <div className="flex flex-col justify-center items-start py-2.5">
-                            <label className="text-gray-600">
-                                Chat name
-                            </label>
-                            <input
-                                id="chat_name"
-                                required={true}
-                                value={chatName}
-                                type="text"
-                                onChange={handleInputChange}
-                                placeholder="Chat name"
-                                className="bg-white border-2 border-gray-400 focus:outline-none focus:border-purple-700 w-[80%] h-10 rounded-md px-3 py-0.5"
-                            />
-                        </div>
-                        <div className="flex flex-col justify-center items-start py-2.5">
-                            <label className="text-gray-600">Document</label>
-                            <div className="relative w-[80%]">
-                                <input
-                                    id="document"
-                                    required={true}
-                                    type="file"
-                                    accept=".pdf,.txt,.docx, .doc"
-                                    onChange={handleUploadFile}
-                                    className="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-700 transition-all duration-300 ease-in-out hover:border-purple-500 focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-200 file:mr-4 file:rounded-full file:border-0 file:bg-purple-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-purple-700 hover:file:bg-purple-200 file:opacity-0 file:w-0"
-                                />
-                                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
-                                    <div className="flex justify-center items-center bg-purple-100 hover:bg-purple-900 hover:cursor-pointer px-2.5 py-2.5 rounded">
-                                        <Upload className="w-4 h-4 text-purple-700" />
-                                        {/* <span className="text-sm font-medium text-purple-700">Choose File</span> */}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
+                <div className="grid md:grid-cols-3 gap-8 mb-7">
+                    {[
                         {
-                            creatingChatError && (
-                                <div className="text-red-400 text-sm">{creatingChatError}</div>
-                            )
+                            step: "01",
+                            title: "Upload Your Data",
+                            description: "Import your documents, knowledge base, or custom dataset"
+                        },
+                        {
+                            step: "02",
+                            title: "Choose RAG Types",
+                            description: "Select from our comprehensive library of RAG implementations"
+                        },
+                        {
+                            step: "03",
+                            title: "Test & Compare",
+                            description: "Run tests, analyze results, and integrate the best solution"
                         }
-
-                        <div className="py-5">
-                            <Button
-                                buttonName="Upload"
-                                actionName="Uploading..."
-                                isPending={isPending}
-                                style={"w-[80%]"}
-                                action={handleSubmit}
-                            />
+                    ].map((item, index) => (
+                        <div key={index} className="text-center relative">
+                            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-md font-bold">
+                                {item.step}
+                            </div>
+                            <h3 className="text-xl font-semibold mb-3 text-gray-800">{item.title}</h3>
+                            <p className="text-gray-600">{item.description}</p>
+                            {index < 2 && (
+                                <ChevronRight className="w-6 h-6 text-gray-400 absolute top-8 -right-3 hidden md:block" />
+                            )}
                         </div>
-                    </form>
+                    ))}
                 </div>
             </div>
+
+            <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm p-8">
+                <h3 className="text-2xl font-semibold text-purple-700 mb-6 flex items-center gap-2">
+                    <Plus className="w-6 h-6" />
+                    Create New Chat
+                </h3>
+                {/* 
+                {showCreatingChatModal && (
+                    <div className={`mb-4 px-4 py-2 rounded text-white text-sm font-medium ${isCreatingNewChatSuccess ? "bg-green-500" : "bg-red-500"}`}>
+                        {isCreatingNewChatSuccess ? "Chat created successfully!" : "Creating chat failed."}
+                    </div>
+                )} */}
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                        <label htmlFor="chat_name" className="block mb-1 text-gray-700">Chat Name</label>
+                        <input
+                            id="chat_name"
+                            type="text"
+                            required
+                            value={chatName}
+                            onChange={handleInputChange}
+                            placeholder="e.g. Product FAQ Bot"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="document" className="block mb-1 text-gray-700">Upload Document</label>
+                        <input
+                            id="document"
+                            type="file"
+                            required
+                            accept=".pdf,.txt,.docx,.doc"
+                            onChange={handleUploadFile}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 file:text-purple-700 file:bg-purple-100 file:border-0 file:px-4 file:py-1 file:rounded file:mr-3"
+                        />
+                    </div>
+
+                    {creatingChatError && (
+                        <p className="text-red-500 text-sm">{creatingChatError}</p>
+                    )}
+
+                    <Button
+                        buttonName="Create Chat"
+                        actionName="Creating..."
+                        isPending={isPending}
+                        action={handleSubmit}
+                        style="w-full bg-purple-600 text-white hover:bg-purple-700"
+                    />
+                </form>
+
+            </div>
+            <div className="w-full flex justify-center items-center mt-5 text-gray-500">It may take few time to create a new chat based on the size of your documents.</div>
         </div>
-    )
+    );
 }
