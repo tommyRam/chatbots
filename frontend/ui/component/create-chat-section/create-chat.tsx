@@ -101,7 +101,7 @@ export default function CreateChat() {
                     <p className="text-gray-600">Upload documents and chat with your data</p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8 mb-9">
+                <div className="grid md:grid-cols-3 gap-8 mb-7">
                     {[
                         {
                             step: "01",
@@ -120,7 +120,7 @@ export default function CreateChat() {
                         }
                     ].map((item, index) => (
                         <div key={index} className="text-center relative">
-                            <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-xl font-bold">
+                            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-md font-bold">
                                 {item.step}
                             </div>
                             <h3 className="text-xl font-semibold mb-3 text-gray-800">{item.title}</h3>
@@ -183,7 +183,9 @@ export default function CreateChat() {
                         style="w-full bg-purple-600 text-white hover:bg-purple-700"
                     />
                 </form>
+
             </div>
+            <div className="w-full flex justify-center items-center mt-5 text-gray-500">It may take few time to create a new chat based on the size of your documents.</div>
         </div>
     );
 }
