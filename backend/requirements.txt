@@ -27,6 +27,7 @@ langchain[openai]
 langchain
 langchain_community
 langchain_core
+lagchain-tavily
 langchain-pinecone
 langgraph
 chromadb
@@ -43,4 +44,5 @@ protobuf==3.20.3
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
+more-itertools
 

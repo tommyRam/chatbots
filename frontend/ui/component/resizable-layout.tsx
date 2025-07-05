@@ -18,13 +18,14 @@ export default function ResizableLayout({ leftComponent, rightComponent }: Resiz
     }, []);
 
     const handleMouseMove = useCallback((e: globalThis.MouseEvent) => {
-        if(!isResizing || !containerRef.current) return;
+        if (!isResizing || !containerRef.current) return;
 
         const container = containerRef.current as HTMLDivElement;
         const containerRect = container.getBoundingClientRect();
         const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
 
-        const constrainedWidth = Math.max(20, Math.min(80, newLeftWidth));
+        var constrainedWidth = Math.max(35, Math.min(80, newLeftWidth));
+        constrainedWidth = Math.min(constrainedWidth, 65);
         setLeftWidth(constrainedWidth);
     }, [isResizing]);
 
@@ -33,7 +34,7 @@ export default function ResizableLayout({ leftComponent, rightComponent }: Resiz
     }, []);
 
     useEffect(() => {
-        if(isResizing) {
+        if (isResizing) {
             document.addEventListener("mousemove", handleMouseMove);
             document.addEventListener("mouseup", handleMouseUp);
             document.body.style.cursor = "col-resize";
@@ -51,21 +52,21 @@ export default function ResizableLayout({ leftComponent, rightComponent }: Resiz
     return (
         <div className="h-full">
             <div ref={containerRef} className="h-full w-full flex">
-                <div 
-                    className="bg-white flex justify-center items-center" 
+                <div
+                    className="bg-white flex justify-center items-center"
                     style={{ width: `calc(${leftWidth}% - 4px)` }}
                 >
                     {leftComponent}
                 </div>
 
-                <div 
-                    className="flex justify-center items-center w-1.5 h-full bg-transparent hover:bg-purple-300 cursor-col-resize transition-colors flex-shrink-0 group" 
+                <div
+                    className="flex justify-center items-center w-1.5 h-full bg-transparent hover:bg-purple-300 cursor-col-resize transition-colors flex-shrink-0 group"
                     onMouseDown={handleMouseDown}
                 >
                     <div className="w-0.5 h-8 bg-purple-800 rounded-full group-hover:bg-gray-400 transition-colors"></div>
                 </div>
 
-                <div 
+                <div
                     className="bg-white flex justify-center items-center flex-1"
                 >
                     {rightComponent}

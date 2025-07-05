@@ -10,11 +10,12 @@ import { LoginFormData } from "@/types/auth";
 import { getCurrentUser, login } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
 import { getUserChatList } from "@/api/chat-api";
+import { Database } from "lucide-react";
 
 type LoginFormField = keyof LoginFormData
 
-export default function Login(){
-    const [submittingError, setSubmittingError]= useState<string>("");
+export default function Login() {
+    const [submittingError, setSubmittingError] = useState<string>("");
     const [isPending, setIsPending] = useState<boolean>(false);
     const router = useRouter();
     const {
@@ -36,7 +37,7 @@ export default function Login(){
 
         const isValidForm = validateForm();
         setIsPending(true);
-        if (isValidForm){
+        if (isValidForm) {
             try {
                 const response = await login(formData);
                 const userData = await getCurrentUser(response.access_token);
@@ -48,12 +49,12 @@ export default function Login(){
                 const chatList = await getUserChatList(userData.id, response.access_token);
                 localStorage.setItem("chatList", JSON.stringify(chatList));
                 router.push("/main/chat/new");
-            } catch (e: unknown){
+            } catch (e: unknown) {
                 setSubmittingError("" + e);
             } finally {
                 setIsPending(false);
             }
-        }else {
+        } else {
             setIsPending(false);
         }
     }
@@ -71,65 +72,81 @@ export default function Login(){
     }
 
     return (
-        <div className="flex-1 flex justify-center items-center">
-            <div className="flex flex-col px-9 py-9 rounded border-2 border-gray-500  w-md">
-                <div className="w-full text-4xl font-bold text-purple-950 flex justify-center pb-12">
-                    Login
-                </div>
-                <div>
-                    <form className="space-y-5" onSubmit={handleSubmit}>
-                        <AuthInputForm 
-                            id="user_id"
-                            type="text"
-                            label="Username or email"
-                            placeholder="Username or email"
-                            shouldShowError={shouldShowError("username")}
-                            errorMessage={errors.username}
-                            value={formData.username}
-                            onChange={handleInputChange("username")}
-                            onBlur={handleInputBlur("username")}
-                        />
-                        <AuthInputForm 
-                            id="password"
-                            type="password"
-                            label="Password"
-                            placeholder="Password"
-                            shouldShowError={shouldShowError("password")}
-                            errorMessage={errors.password}
-                            value={formData.password}
-                            onChange={handleInputChange("password")}
-                            onBlur={handleInputBlur("password")}
-                        />
+        <div className="flex-1 bg-white flex items-center justify-center p-4">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-200/20 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-300/20 rounded-full blur-3xl"></div>
+            </div>
 
-                        {
-                            submittingError && 
-                            <div className="text-red-400 text-sm">
-                                {submittingError}
-                            </div>
-                        }
-
-                        <div className="flex justify-center pt-2">
-                            <Button 
-                                type="submit" 
-                                buttonName="Login" 
-                                actionName="Login..." 
-                                style="w-full" 
-                                isPending={isPending}
-                                action={handleSubmit}
+            <div className="relative w-full max-w-md">
+                <form onSubmit={handleSubmit}>
+                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 backdrop-blur-sm">
+                        <div className="flex w-full items-center justify-center mb-6 font-bold text-xl text-purple-900">Login</div>
+                        <div className="space-y-6">
+                            <AuthInputForm
+                                id="user_id"
+                                type="text"
+                                label="Username or Email"
+                                placeholder="Enter your username or email"
+                                shouldShowError={shouldShowError("username")}
+                                errorMessage={errors.username}
+                                value={formData.username}
+                                onChange={handleInputChange("username")}
+                                onBlur={handleInputBlur("username")}
                             />
+
+                            <AuthInputForm
+                                id="password"
+                                type="password"
+                                label="Password"
+                                placeholder="Enter your password"
+                                shouldShowError={shouldShowError("password")}
+                                errorMessage={errors.password}
+                                value={formData.password}
+                                onChange={handleInputChange("password")}
+                                onBlur={handleInputBlur("password")}
+                            />
+
+                            {submittingError && (
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-fade-in">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                            <span className="text-white text-xs">!</span>
+                                        </div>
+                                        <span className="text-red-700 text-sm font-medium">
+                                            {submittingError}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="pt-2">
+                                <Button
+                                    type="submit"
+                                    buttonName="Sign In"
+                                    actionName="Signing in..."
+                                    style="w-full group"
+                                    isPending={isPending}
+                                    action={handleSubmit}
+                                />
+                            </div>
                         </div>
-                    </form>
-                </div>
-                <div>
-                    <Link href={"/auth/register"}>
-                        <div 
-                            className="flex justify-center pt-6 text-blue-400 hover:cursor-pointer"
-                        >
-                            Create an account ?
+
+                        <div className="mt-8 text-center">
+                            <p className="text-gray-600">
+                                Don't have an account?{' '}
+                                <Link href="/auth/register" className="text-purple-600 hover:text-purple-700 font-semibold transition-colors hover:underline">
+                                    Create one here
+                                </Link>
+                            </p>
                         </div>
-                    </Link>
+                    </div>
+                </form>
+
+                <div className="text-center mt-6 text-sm text-gray-500">
+                    <p>By signing in, you agree to our Terms of Service and Privacy Policy</p>
                 </div>
             </div>
         </div>
-    )
+    );
 }

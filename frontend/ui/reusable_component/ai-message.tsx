@@ -8,7 +8,7 @@ interface AIMessageProps {
     index: number;
 }
 
-export default function AIMessage({aiMessages, index}: AIMessageProps) {
+export default function AIMessage({ aiMessages, index }: AIMessageProps) {
     const [processedContent, setProcessedContent] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -67,7 +67,7 @@ export default function AIMessage({aiMessages, index}: AIMessageProps) {
                             AI Assistant
                         </div>
                         <div className="bg-white border border-purple-100 px-6 py-4 rounded-2xl rounded-tl-md shadow-sm hover:shadow-md transition-all duration-200">
-                            <div 
+                            <div
                                 className="text-gray-800 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
                                 dangerouslySetInnerHTML={{ __html: processedContent }}
                             />

@@ -1,10 +1,10 @@
 "use client";
 
-import { 
-    createNewChat, 
-    getAIMessageFromChat, 
-    getHumanMessageFromChat, 
-    getUserChatList, 
+import {
+    createNewChat,
+    getAIMessageFromChat,
+    getHumanMessageFromChat,
+    getUserChatList,
     sendUserInput,
     getLatestAIMessageFromChat,
     getLatestHumanMessageFromChat,
@@ -12,11 +12,11 @@ import {
 } from "@/api/chat-api";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { 
-    transfomAIMessageResponseSchema, 
-    transformChatResponse, 
-    transformMessageResponse, 
-    transfomHumanMessageResponseSchema ,
+import {
+    transfomAIMessageResponseSchema,
+    transformChatResponse,
+    transformMessageResponse,
+    transfomHumanMessageResponseSchema,
     transformDocumentResponse
 } from "@/utils/transformers";
 import { clearLocalStorage } from "@/utils/auth";
@@ -26,12 +26,13 @@ interface ChatContextType {
     aiMessages: AIMessageResponseSchema[];
     humanMessages: HumanMessageResponseSchema[];
     currentChat: ChatSchema | null;
+    errorMessageOnQuery: string | null;
     handleAddChat: (newChat: ChatSchema) => void;
     handleAddAllChat: (chats: ChatSchema[]) => void;
     handleAddAIMessage: (newAIMessage: AIMessageResponseSchema) => void;
     handleAddAllAIMessages: (allAIMessages: AIMessageResponseSchema[]) => void;
     handleAddHumanMessage: (newHumanMessage: HumanMessageResponseSchema) => void;
-    handleAddAllHumanMessages: (allHumanMessages: HumanMessageResponseSchema[]) => void;  
+    handleAddAllHumanMessages: (allHumanMessages: HumanMessageResponseSchema[]) => void;
     handleChangeCurrentChat: (newChat: ChatSchema) => void;
     handleClearAIMessages: () => void;
     handleClearHumanMessages: () => void;
@@ -44,27 +45,30 @@ interface ChatContextType {
     loadHumanMessagesFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema[]>;
     loadLatestAIMessageFromChat: (chatId: string, accessToken: string) => Promise<AIMessageResponseSchema>;
     loadLatestHumanMessageFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema>;
+    handleClearErrorMessageOnQuery: () => void;
+    handleChangeErrorMessageOnQuery: (message: string) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-export default function ChatProvider (
-    { children } : { children : React.ReactNode }
+export default function ChatProvider(
+    { children }: { children: React.ReactNode }
 ) {
     const [chats, setChats] = useState<ChatSchema[]>([]);
     const [aiMessages, setAIMessages] = useState<AIMessageResponseSchema[]>([]);
     const [humanMessages, setHumanMessages] = useState<HumanMessageResponseSchema[]>([]);
+    const [errorMessageOnQuery, setErrorMessageOnQuery] = useState<string | null>(null);
     const [currentChat, setCurrentChat] = useState<ChatSchema | null>(null);
     const router = useRouter();
 
     useEffect(() => {
         setTimeout(() => {
             try {
-                if (chats.length === 0){
+                if (chats.length === 0) {
                     const userDataString = localStorage.getItem("user_data");
                     const accessToken = localStorage.getItem("access_token");
 
-                    if (userDataString === "" || userDataString === null || accessToken === null){
+                    if (userDataString === "" || userDataString === null || accessToken === null) {
                         throw new Error("User not authenticated")
                     }
 
@@ -78,7 +82,7 @@ export default function ChatProvider (
                     const currentChatFromLocalStorage = JSON.parse(currentChat);
                     handleChangeCurrentChat(currentChatFromLocalStorage);
                 }
-            } catch(e) {
+            } catch (e) {
                 console.log(e);
                 clearLocalStorage();
                 router.push("/auth/login");
@@ -114,6 +118,14 @@ export default function ChatProvider (
         setHumanMessages([]);
     }
 
+    const handleClearErrorMessageOnQuery = (): void => {
+        setErrorMessageOnQuery(null);
+    }
+
+    const handleChangeErrorMessageOnQuery = (message: string) => {
+        setErrorMessageOnQuery(message);
+    }
+
     const handleChangeCurrentChat = (newChat: ChatSchema): void => {
         setCurrentChat(newChat);
     }
@@ -144,11 +156,12 @@ export default function ChatProvider (
 
     const sendMessage = async (message: string, chatId: string, accessToken: string, endpoint?: string): Promise<MessageResponse> => {
         try {
-            const newMessageResponse: BackendMessageResponse = await sendUserInput(message, chatId, accessToken=accessToken, endpoint);
+            const newMessageResponse: BackendMessageResponse = await sendUserInput(message, chatId, accessToken = accessToken, endpoint);
             const newMessageResponseFormatted: MessageResponse = transformMessageResponse(newMessageResponse);
             return newMessageResponseFormatted;
         } catch (e) {
-            throw new Error("Can't send message" + e);
+            const errorMessage = (e instanceof Error ? e.message : "Can't send message");
+            throw new Error(errorMessage);
         }
     }
 
@@ -158,7 +171,7 @@ export default function ChatProvider (
             const chatListFormatted: ChatSchema[] = chatList.map((value: BackendchatSchema) => transformChatResponse(value));
             handleAddAllChat(chatListFormatted);
             return chatListFormatted;
-        } catch(e) {
+        } catch (e) {
             throw new Error("Can't load user chat lists: " + e);
         }
     }
@@ -169,18 +182,18 @@ export default function ChatProvider (
             const aiMessageFormatted: AIMessageResponseSchema[] = aiMessageList.map((value: BackendAIMessageResponseSChema) => transfomAIMessageResponseSchema(value));
             handleAddAllAIMessages(aiMessageFormatted);
             return aiMessageFormatted;
-        } catch(e) {
+        } catch (e) {
             throw new Error("Can't load AI messages responses: " + e);
         }
     }
 
-    const loadHumanMessagesFromChat = async (chatId: string, accessToken: string): Promise<HumanMessageResponseSchema[]>  => {
+    const loadHumanMessagesFromChat = async (chatId: string, accessToken: string): Promise<HumanMessageResponseSchema[]> => {
         try {
             const humanMessageList: BackendHumanMessageResponseSChema[] = await getHumanMessageFromChat(chatId, accessToken);
             const humanMessageFormatted: HumanMessageResponseSchema[] = humanMessageList.map((value: BackendHumanMessageResponseSChema) => transfomHumanMessageResponseSchema(value));
             handleAddAllHumanMessages(humanMessageFormatted);
             return humanMessageFormatted;
-        } catch(e) {
+        } catch (e) {
             throw new Error("Can't load Human messages query: " + e);
         }
     }
@@ -191,7 +204,7 @@ export default function ChatProvider (
             const latestAIMessageFormatted: AIMessageResponseSchema = transfomAIMessageResponseSchema(latestAIMessage);
             handleAddAIMessage(latestAIMessageFormatted);
             return latestAIMessageFormatted;
-        } catch(e) {
+        } catch (e) {
             throw new Error("Can't load latest ai response: " + e);
         }
     }
@@ -202,7 +215,7 @@ export default function ChatProvider (
             const latestHumanMessageFormatted: HumanMessageResponseSchema = transfomHumanMessageResponseSchema(latestHumanMessage);
             handleAddHumanMessage(latestHumanMessageFormatted);
             return latestHumanMessageFormatted;
-        } catch(e) {
+        } catch (e) {
             throw new Error("Can't load latest human message query: " + e);
         }
     }
@@ -212,6 +225,7 @@ export default function ChatProvider (
         aiMessages,
         humanMessages,
         currentChat,
+        errorMessageOnQuery,
         handleAddAllChat,
         handleAddChat,
         handleAddAIMessage,
@@ -229,7 +243,9 @@ export default function ChatProvider (
         loadAIMessagesFromChat,
         loadHumanMessagesFromChat,
         loadLatestAIMessageFromChat,
-        loadLatestHumanMessageFromChat
+        loadLatestHumanMessageFromChat,
+        handleClearErrorMessageOnQuery,
+        handleChangeErrorMessageOnQuery
     }
 
     return (

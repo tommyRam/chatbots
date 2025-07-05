@@ -27,7 +27,7 @@ export function transformChatResponse(backendChatResponse: BackendchatSchema): C
         chatId: backendChatResponse.chat_id,
         userId: backendChatResponse.user_id,
         chatName: backendChatResponse.chat_name,
-        documentId: backendChatResponse.document_id
+        // documentId: backendChatResponse.document_id
     };
 }
 

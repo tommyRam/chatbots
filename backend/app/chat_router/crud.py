@@ -3,7 +3,7 @@ from datetime import datetime
 
 from models import (
     ChatModel, 
-    DocumentModel, 
+    # DocumentModel, 
     HumanMessagesModel, 
     AIMessagesModel, 
     RetrievedDocumentsModel
@@ -23,16 +23,16 @@ def get_chat_by_id(chat_id: str, db: orm.Session):
 def get_chat_by_chat_name(chat_name: str, db: orm.Session):
     return db.query(ChatModel).filter(ChatModel.chat_name == chat_name).first()
 
-def add_document(document: DocumentModel, db: orm.Session):
-    db.add(document)
-    db.commit()
-    db.refresh(document)
+# def add_document(document: DocumentModel, db: orm.Session):
+#     db.add(document)
+#     db.commit()
+#     db.refresh(document)
 
-def get_document_by_id(document_id: str, db: orm.Session):
-    return db.query(DocumentModel).filter(DocumentModel.id == document_id).first()
+# def get_document_by_id(document_id: str, db: orm.Session):
+#     return db.query(DocumentModel).filter(DocumentModel.id == document_id).first()
 
-def get_document_by_drive_id(document_drive_id: str, db: orm.Session):
-    return db.query(DocumentModel).filter(DocumentModel.document_drive_id == document_drive_id).first()
+# def get_document_by_drive_id(document_drive_id: str, db: orm.Session):
+#     return db.query(DocumentModel).filter(DocumentModel.document_drive_id == document_drive_id).first()
 
 def add_human_message(human_message: HumanMessagesModel, db: orm.Session):
     db.add(human_message)

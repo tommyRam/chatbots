@@ -1,4 +1,5 @@
 interface RagTypeSchema {
     displayName: string;
-    enpoint: string;
+    endpoint: string;
+    notebookName: string;
 }

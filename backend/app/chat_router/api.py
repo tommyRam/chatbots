@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime
 
 from .services import (
-    upload_file_to_drive_folder, 
+    # upload_file_to_drive_folder, 
     get_user_chats_by_user_id,
     get_user_chat_ai_messages_by_chat_id,
     get_user_chat_human_messages_by_chat_id,
@@ -21,13 +21,13 @@ from .schemas import (
 )
 from .crud import (
     add_chat, 
-    add_document,
-    get_document_by_drive_id,
+    # add_document,
+    # get_document_by_drive_id,
     get_chat_by_chat_name
 )
 from router.schemas import LoginUserRequest
 from router.services import current_user, get_db
-from models import DocumentModel, ChatModel
+from models import ChatModel
 from llms_router.utils.rag import upload_data_to_vectorestore
 
 router = APIRouter(
@@ -45,21 +45,21 @@ async def create_chat(
     db: orm.Session = Depends(get_db)
 ):
     try:
-        uploaded_drive_file_metadata = await upload_file_to_drive_folder(uploaded_files)
-        if not upload_file_to_drive_folder:
-            raise FileNotFoundError("Error when uploading file into drive!")
+        # uploaded_drive_file_metadata = await upload_file_to_drive_folder(uploaded_files)
+        # if not upload_file_to_drive_folder:
+        #     raise FileNotFoundError("Error when uploading file into drive!")
         
-        new_document = DocumentModel(
-            document_name=uploaded_drive_file_metadata["file_name"],
-            document_drive_id=uploaded_drive_file_metadata["file_id"],
-            document_size=uploaded_files.size,
-            created_at=datetime.now()
-        )
-        add_document(document=new_document, db=db)
-        document_by_drive_id = get_document_by_drive_id(uploaded_drive_file_metadata["file_id"], db=db)
+        # new_document = DocumentModel(
+        #     document_name=uploaded_drive_file_metadata["file_name"],
+        #     document_drive_id=uploaded_drive_file_metadata["file_id"],
+        #     document_size=uploaded_files.size,
+        #     created_at=datetime.now()
+        # )
+        # add_document(document=new_document, db=db)
+        # document_by_drive_id = get_document_by_drive_id(uploaded_drive_file_metadata["file_id"], db=db)
         new_chat = ChatModel(
             user_id=user_id,
-            document_id=document_by_drive_id.id,
+            # document_id=document_by_drive_id.id,
             chat_name=chat_name,
             created_at=datetime.now()
         )
@@ -73,7 +73,7 @@ async def create_chat(
             chat_id=chat_by_name.id,
             user_id=user_id,
             chat_name=chat_by_name.chat_name,
-            document_id=chat_by_name.document_id
+            # document_id=chat_by_name.document_id
         )
     except Exception as e:
         raise HTTPException(

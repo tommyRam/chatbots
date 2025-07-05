@@ -100,7 +100,7 @@ def get_user_chats_by_user_id(user_id: str, db: orm.Session) -> List[ChatRespons
       ChatResponse(
          chat_id=chat.id,
          user_id=chat.user_id,
-         document_id=chat.document_id,
+         # document_id=chat.document_id,
          chat_name=chat.chat_name
       )
       for chat in chats
