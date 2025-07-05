@@ -14,6 +14,10 @@ export const allRagTechnicsConstant: RagTypeSchema[] = [
     {
         displayName: "Decomposition RAG",
         enpoint: "/api/RAG/decompositionRAG"
+    }, 
+    {
+        displayName: "Corrective RAG",
+        enpoint: "/api/RAG/CRAG"
     }
 ];
 
