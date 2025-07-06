@@ -3,14 +3,12 @@
 import Button from "@/ui/reusable_component/button";
 import AuthInputForm from "@/ui/reusable_component/auth-input-form";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, startTransition, useEffect, useState, useTransition } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import useLoginForm from "@/hooks/use-login-form";
-import { AuthResponse } from "@/types/auth";
 import { LoginFormData } from "@/types/auth";
 import { getCurrentUser, login } from "@/api/auth-api";
 import { useRouter } from "next/navigation";
 import { getUserChatList } from "@/api/chat-api";
-import { Database } from "lucide-react";
 
 type LoginFormField = keyof LoginFormData
 
@@ -21,11 +19,9 @@ export default function Login() {
     const {
         formData,
         errors,
-        touched,
         updateField,
         makeFieldAsTouched,
         validateForm,
-        resetForm
     } = useLoginForm();
 
 
@@ -134,7 +130,7 @@ export default function Login() {
 
                         <div className="mt-8 text-center">
                             <p className="text-gray-600">
-                                Don't have an account?{' '}
+                                Don&apos;t have an account?{' '}
                                 <Link href="/auth/register" className="text-purple-600 hover:text-purple-700 font-semibold transition-colors hover:underline">
                                     Create one here
                                 </Link>

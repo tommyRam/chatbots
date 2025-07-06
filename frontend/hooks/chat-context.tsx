@@ -27,6 +27,7 @@ interface ChatContextType {
     humanMessages: HumanMessageResponseSchema[];
     currentChat: ChatSchema | null;
     errorMessageOnQuery: string | null;
+    isLoadingChatsMessages: boolean;
     handleAddChat: (newChat: ChatSchema) => void;
     handleAddAllChat: (chats: ChatSchema[]) => void;
     handleAddAIMessage: (newAIMessage: AIMessageResponseSchema) => void;
@@ -47,6 +48,7 @@ interface ChatContextType {
     loadLatestHumanMessageFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema>;
     handleClearErrorMessageOnQuery: () => void;
     handleChangeErrorMessageOnQuery: (message: string) => void;
+    handleChangeIsLoadingChatsMessage: (value: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -59,6 +61,7 @@ export default function ChatProvider(
     const [humanMessages, setHumanMessages] = useState<HumanMessageResponseSchema[]>([]);
     const [errorMessageOnQuery, setErrorMessageOnQuery] = useState<string | null>(null);
     const [currentChat, setCurrentChat] = useState<ChatSchema | null>(null);
+    const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
     const router = useRouter();
 
     useEffect(() => {
@@ -220,12 +223,17 @@ export default function ChatProvider(
         }
     }
 
+    const handleChangeIsLoadingChatsMessage = (value: boolean): void => {
+        setIsLoadingChatsMessage(value);
+    }
+
     const value = {
         chats,
         aiMessages,
         humanMessages,
         currentChat,
         errorMessageOnQuery,
+        isLoadingChatsMessages,
         handleAddAllChat,
         handleAddChat,
         handleAddAIMessage,
@@ -245,7 +253,8 @@ export default function ChatProvider(
         loadLatestAIMessageFromChat,
         loadLatestHumanMessageFromChat,
         handleClearErrorMessageOnQuery,
-        handleChangeErrorMessageOnQuery
+        handleChangeErrorMessageOnQuery,
+        handleChangeIsLoadingChatsMessage
     }
 
     return (

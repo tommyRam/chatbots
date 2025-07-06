@@ -18,7 +18,6 @@ export default function Register() {
     const {
         formData,
         errors,
-        formTouched,
         updateRegisterFormField,
         makeRegisterFormFieldAsTouched,
         validateRegisterForm

@@ -7,7 +7,7 @@ class DocumentSchema(BaseModel):
     file_type: Optional[str]
     page: Optional[int]
     page_label: Optional[str]
-    title: Optional[str]
+    # title: Optional[str]
     upload_time: Optional[str]
     score: Optional[str] = ""
 
