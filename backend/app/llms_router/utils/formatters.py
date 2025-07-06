@@ -8,7 +8,9 @@ def format_docs(docs):
 
 def format_docs_list(docs):
     print("format list")
+    print(docs)
     docs_schemas = []
+    print("BEeeeeeeeeeeeeeeeeeeeeeee")
     for doc in docs:
         score = None
         if isinstance(doc, tuple):
@@ -20,10 +22,11 @@ def format_docs_list(docs):
             file_type=doc.metadata["file_type"],
             page=doc.metadata["page"],
             page_label=doc.metadata["page_label"],
-            title=doc.metadata["title"],
+            # title=doc.metadata["title"] | "",
             upload_time=doc.metadata["upload_time"],
         )
 
+        print("Errrrrrrrrrrrrrrrrrrrrrrrr")
         if score:
             doc_schema.score = score
 

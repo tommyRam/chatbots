@@ -29,7 +29,7 @@ export default function ChatMessages({
     isPending = false,
     errorMessage
 }: ChatMessagesProps) {
-    const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
+    // const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
     const [userHasScrolled, setUserHasScrolled] = useState(false);
     const [lastMessageCount, setLastMessageCount] = useState(0);
 
@@ -37,10 +37,12 @@ export default function ChatMessages({
         aiMessages,
         humanMessages,
         currentChat,
+        isLoadingChatsMessages,
         loadAIMessagesFromChat,
         loadHumanMessagesFromChat,
         handleChangeCurrentChat,
-        setCurrentChatToNull
+        setCurrentChatToNull,
+        handleChangeIsLoadingChatsMessage
     } = useChat();
 
     const {
@@ -111,7 +113,8 @@ export default function ChatMessages({
     useEffect(() => {
         const handleReload = async () => {
             const accessToken = localStorage.getItem("access_token");
-            setIsLoadingChatsMessage(true);
+            // setIsLoadingChatsMessage(true);
+            handleChangeIsLoadingChatsMessage(true);
 
             try {
                 if (!accessToken || accessToken === "") {
@@ -148,7 +151,8 @@ export default function ChatMessages({
                 router.push("/auth/login");
                 console.log(e);
             } finally {
-                setIsLoadingChatsMessage(false);
+                // setIsLoadingChatsMessage(false);
+                handleChangeIsLoadingChatsMessage(false);
             }
         }
 
@@ -271,14 +275,11 @@ export default function ChatMessages({
                             </div>
                             <h3 className="text-lg font-semibold text-gray-700 mb-2">Start a Conversation</h3>
                             <p className="text-gray-500 max-w-sm">
-                                Ask me anything about the docs you send to me! I'm here to help you with information, analysis...
+                                Ask me anything about the docs you send to me! I'm here to help you with information...
                             </p>
                             <div className="mt-6 flex flex-wrap justify-center gap-2">
                                 <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
                                     Questions
-                                </span>
-                                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                                    Analysis
                                 </span>
                             </div>
                         </div>

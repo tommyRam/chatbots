@@ -195,7 +195,7 @@ def add_retrieved_documents_to_db(
             file_type=doc.file_type,
             page=doc.page,
             page_label=doc.page_label,
-            title=doc.title,
+            # title=doc.title,
             upload_time=doc.upload_time,
             score=doc.score,
             created_at=datetime.now(),

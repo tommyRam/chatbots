@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ChevronRight, Database, Star } from "lucide-react";
+import { Database, Star } from "lucide-react";
 
 
 // Custom Button Component (assuming similar to your existing one)

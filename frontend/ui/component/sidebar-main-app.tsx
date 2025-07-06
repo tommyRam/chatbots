@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, Menu, MessageCircleMoreIcon, Plus, TrashIcon } from "lucide-react";
+import { ChevronLeft, Menu, MessageCircleMoreIcon, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useChat } from "@/hooks/chat-context";
@@ -16,7 +16,8 @@ export default function SideBarMain() {
         removeCurrentChat,
         setCurrentChatToNull,
         handleClearAIMessages,
-        handleClearHumanMessages
+        handleClearHumanMessages,
+        handleChangeIsLoadingChatsMessage
     } = useChat();
 
     const {
@@ -41,6 +42,7 @@ export default function SideBarMain() {
             return;
         }
 
+        handleChangeIsLoadingChatsMessage(true);
         router.push(`${chats[index].chatId}`);
         setCurrentHumanMessageWithRetrievedDocumentsToNull();
         handleClearAIMessages();
@@ -48,14 +50,16 @@ export default function SideBarMain() {
         setCurrentChatToNull();
         handleChangeCurrentChat(chats[index]);
         localStorage.setItem("currentChat", JSON.stringify(chats[index]));
+        handleChangeIsLoadingChatsMessage(false);
     }
 
     const handleCreateNewChat = (): void => {
+        router.push("/main/chat/new");
         removeCurrentChat();
         setCurrentHumanMessageWithRetrievedDocumentsToNull();
         localStorage.removeItem("currentChat");
 
-        router.push("/main/chat/new");
+        // router.push("/main/chat/new");
     }
 
     return (
