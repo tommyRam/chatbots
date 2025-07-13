@@ -15,21 +15,27 @@ import { useDocsRetrieved } from "@/hooks/docs-context";
 interface ChatMessagesProps {
     tempHumanMessage: string | null;
     setTempHumanMessageToNull: () => void;
+    tempAIMessage: string | null;
+    setTempAIMessageToNull: () => void;
     scrollToBottom: () => void;
     scrollContainer: HTMLElement | null;
     isPending?: boolean;
     errorMessage: string | null;
+    isStreaming: boolean;
 }
 
 export default function ChatMessages({
     tempHumanMessage,
     setTempHumanMessageToNull,
+    tempAIMessage,
+    setTempAIMessageToNull,
     scrollToBottom,
     scrollContainer,
     isPending = false,
-    errorMessage
+    errorMessage,
+    isStreaming
 }: ChatMessagesProps) {
-    const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
+    // const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
     const [userHasScrolled, setUserHasScrolled] = useState(false);
     const [lastMessageCount, setLastMessageCount] = useState(0);
 
@@ -37,10 +43,12 @@ export default function ChatMessages({
         aiMessages,
         humanMessages,
         currentChat,
+        isLoadingChatsMessages,
         loadAIMessagesFromChat,
         loadHumanMessagesFromChat,
         handleChangeCurrentChat,
-        setCurrentChatToNull
+        setCurrentChatToNull,
+        handleModifyIsLoadingChatMessage
     } = useChat();
 
     const {
@@ -51,26 +59,10 @@ export default function ChatMessages({
 
     const router = useRouter();
 
-    const shouldShowTempMessage = useMemo(() => {
-        if (!tempHumanMessage) return false;
-
-        const messageExists = humanMessages.some(msg =>
-            msg.content?.trim() === tempHumanMessage.trim()
-        );
-
-        return !messageExists;
-    }, [tempHumanMessage, humanMessages]);
-
-    // Immediate cleanup when real message appears
-    const clearTempMessageIfNeeded = useCallback(() => {
-        if (tempHumanMessage && !shouldShowTempMessage) {
-            setTempHumanMessageToNull();
-        }
-    }, [tempHumanMessage, shouldShowTempMessage, setTempHumanMessageToNull]);
-
     useEffect(() => {
-        clearTempMessageIfNeeded();
-    }, [clearTempMessageIfNeeded]);
+        if (tempHumanMessage) setTempHumanMessageToNull();
+        if (tempAIMessage) setTempAIMessageToNull();
+    }, [aiMessages, humanMessages]);
 
     // Auto-scroll effect
     useEffect(() => {
@@ -111,7 +103,7 @@ export default function ChatMessages({
     useEffect(() => {
         const handleReload = async () => {
             const accessToken = localStorage.getItem("access_token");
-            setIsLoadingChatsMessage(true);
+            handleModifyIsLoadingChatMessage(true);
 
             try {
                 if (!accessToken || accessToken === "") {
@@ -148,7 +140,7 @@ export default function ChatMessages({
                 router.push("/auth/login");
                 console.log(e);
             } finally {
-                setIsLoadingChatsMessage(false);
+                handleModifyIsLoadingChatMessage(false);
             }
         }
 
@@ -174,9 +166,43 @@ export default function ChatMessages({
         }
     }
 
+    if (!((humanMessages.length > 0 && aiMessages.length > 0) || tempHumanMessage)) {
+        return (
+            <div className="text-center py-12 text-gray-500 w-full h-full flex flex-col items-center justify-center">
+                {isLoadingChatsMessages ? (
+                    <MessagesLoadingComponent />
+                ) : (
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-3xl border border-purple-100 shadow-sm">
+                        <div className="bg-gradient-to-r from-purple-400 to-indigo-500 p-4 rounded-2xl inline-block mb-4">
+                            <MessageSquarePlus className="w-8 h-8 text-white" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-700 mb-2">Start a Conversation</h3>
+                        <p className="text-gray-500 max-w-sm">
+                            Ask me anything about the docs you send to me! I'm here to help you with information, analysis...
+                        </p>
+                        <div className="mt-6 flex flex-wrap justify-center gap-2">
+                            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                Questions
+                            </span>
+                            <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                                Analysis
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        )
+    } else if (isLoadingChatsMessages) {
+        return (
+            <div className="text-center py-12 text-gray-500 w-full h-full flex flex-col items-center justify-center">
+                <MessagesLoadingComponent />
+            </div>
+        )
+    }
+
     return (
         <div className="flex-1 flex flex-col items-center justify-start mx-[10%] h-full max-w-2xl px-2">
-            {(humanMessages.length > 0 && aiMessages.length > 0) || shouldShowTempMessage ? (
+            {((humanMessages.length > 0 && aiMessages.length > 0) || tempHumanMessage) && (
                 <div className="w-full space-y-8">
                     {/* Existing messages */}
                     {humanMessages.map((value, index) => (
@@ -194,7 +220,7 @@ export default function ChatMessages({
                     ))}
 
                     {/* Temporary message */}
-                    {shouldShowTempMessage && (
+                    {tempHumanMessage && (
                         <div className="w-full mb-8">
                             <div className="flex justify-end mb-4">
                                 <div className="max-w-[85%] group">
@@ -207,7 +233,7 @@ export default function ChatMessages({
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex justify-center items-center border-white border-2 rounded-full bg-purple-800 text-white w-8 h-8">
+                                        <div className="flex flex-shrink-0 justify-center items-center border-white border-2 rounded-full bg-purple-800 text-white w-8 h-8">
                                             {"john".charAt(0).toUpperCase()}
                                         </div>
                                     </div>
@@ -225,13 +251,32 @@ export default function ChatMessages({
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            <span className="text-sm text-gray-600">...</span>
+                                            <span className="text-sm text-gray-600">Thinking...</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
                         </div>
                     )}
+
+                    {
+                        isStreaming && (
+                            <div className="flex items-center space-x-2 ml-4 mt-4 mb-3.5">
+                                <div className="flex justify-center items-center border-gray-300 border-2 rounded-full bg-white w-8 h-8">
+                                    <Bot className="w-4 h-4 text-purple-600" />
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-md px-6 py-4 shadow-sm">
+                                    <div className="flex items-center space-x-2">
+                                        <svg className="animate-spin h-4 w-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span className="text-sm text-gray-600">{tempAIMessage ? tempAIMessage : "Thinking..."}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
 
                     {errorMessage && (
                         <div className="w-full mb-8">
@@ -256,30 +301,6 @@ export default function ChatMessages({
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            ) : (
-                <div className="text-center py-12 text-gray-500 w-full h-full flex flex-col items-center justify-center">
-                    {isLoadingChatsMessages ? (
-                        <MessagesLoadingComponent />
-                    ) : (
-                        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-3xl border border-purple-100 shadow-sm">
-                            <div className="bg-gradient-to-r from-purple-400 to-indigo-500 p-4 rounded-2xl inline-block mb-4">
-                                <MessageSquarePlus className="w-8 h-8 text-white" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-700 mb-2">Start a Conversation</h3>
-                            <p className="text-gray-500 max-w-sm">
-                                Ask me anything about the docs you send to me! I'm here to help you with information, analysis...
-                            </p>
-                            <div className="mt-6 flex flex-wrap justify-center gap-2">
-                                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                                    Questions
-                                </span>
-                                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                                    Analysis
-                                </span>
                             </div>
                         </div>
                     )}

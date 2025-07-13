@@ -24,8 +24,6 @@ export const sendUserInput = async (
                 }
             )
 
-            console.log(response);
-
             if(!response.ok){
                 const errorResponse = await response.json();
                 throw new Error(errorResponse.detail);
@@ -33,10 +31,44 @@ export const sendUserInput = async (
 
             const re = await response.json();
             return re;
-        }catch (e){
+        } catch (e) {
             console.log(e);
             throw e;
         }
+}
+
+export const sendUserInputStream = async (
+    query: string,
+    chatId: string,
+    accessToken: string,
+    endpoint: string = "/api/RAG/simpleRAG/stream"
+) => {
+    const SIMPLE_RAG_STREAM_ENDPOINT_URL = API_URL + endpoint;
+    const queryRequest = {"query": query, "chat_id": chatId};
+
+    try {
+        const response = await fetch(
+            SIMPLE_RAG_STREAM_ENDPOINT_URL,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(queryRequest)
+            }
+        )
+        
+        if(!response.ok) {
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.detail);
+        }
+
+        return response;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
 }
 
 export const createNewChat = async (
@@ -62,7 +94,7 @@ export const createNewChat = async (
             }
 
         return await response.json();
-    }catch(e) {
+    } catch(e) {
         throw e;
     }
 }
@@ -88,7 +120,7 @@ export const getUserChatList = async (
         }
 
         return await response.json();
-    }catch(e: unknown) {
+    } catch(e: unknown) {
         throw e;
     }
 }
@@ -115,7 +147,7 @@ export const getAIMessageFromChat = async (
         }
 
         return await response.json();
-    }catch(e: unknown) {
+    } catch(e: unknown) {
         throw e;
     }
 }
@@ -142,7 +174,7 @@ export const getLatestAIMessageFromChat = async (
         }
 
         return await response.json();
-    }catch(e: unknown) {
+    } catch(e: unknown) {
         throw e;
     }
 }
@@ -169,7 +201,7 @@ export const getHumanMessageFromChat = async (
         }
 
         return await response.json();
-    }catch(e: unknown) {
+    } catch(e: unknown) {
         throw e;
     }
 }
@@ -196,7 +228,7 @@ export const getLatestHumanMessageFromChat = async (
         }
 
         return await response.json();
-    }catch(e: unknown) {
+    } catch(e: unknown) {
         throw e;
     }
 }
@@ -223,7 +255,7 @@ export const getRetrievedDocuments = async (
         }
 
         return await response.json();
-    }catch(e: unknown) {
+    } catch(e: unknown) {
         throw e;
     }
 }

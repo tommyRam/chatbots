@@ -8,11 +8,14 @@ import ChatMessages from "./chat-message";
 import { useChat } from "@/hooks/chat-context";
 import { useAllRagTechnics } from "@/hooks/rag-type-context";
 import { useDocsRetrieved } from "@/hooks/docs-context";
+import { sendUserInputStream } from "@/api/chat-api";
 
 export default function Chat() {
     const [inputValue, setInputValue] = useState<string>("");
     const [isPending, setIsPending] = useState<boolean>(false);
+    const [isStreaming, setIsStreaming] = useState<boolean>(false);
     const [tempHumanMessage, setTempHumanMessage] = useState<string | null>(null);
+    const [tempAIMessage, setTempAIMessage] = useState<string | null>(null);
     const router = useRouter();
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const [chatContainer, setChatContainer] = useState<HTMLElement | null>(null);
@@ -31,7 +34,8 @@ export default function Chat() {
         loadLatestAIMessageFromChat,
         loadLatestHumanMessageFromChat,
         handleClearErrorMessageOnQuery,
-        handleChangeErrorMessageOnQuery
+        handleChangeErrorMessageOnQuery,
+        handleModifyIsLoadingChatMessage
     } = useChat();
 
     const {
@@ -70,16 +74,59 @@ export default function Chat() {
         try {
 
             if (currentChat && currentChat.chatId) {
-                const response: MessageResponse = await sendMessage(inputValue, currentChat.chatId, accessToken, currentRagTechnic.endpoint);
-                if (response.chatMessage) {
-                    await Promise.all([
-                        loadLatestAIMessageFromChat(currentChat.chatId, accessToken),
-                        loadLatestHumanMessageFromChat(currentChat.chatId, accessToken).then(humanMessage =>
-                            loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken)
-                        )
-                    ]);
-                    setTempHumanMessageToNull();
+                const response = await sendUserInputStream(inputValue, currentChat.chatId, accessToken);
+
+                const reader = response.body?.getReader();
+                if (!reader) {
+                    throw new Error('Failed to get stream reader');
                 }
+
+                const decoder = new TextDecoder();
+                let assistantContent = "";
+
+                while (true) {
+                    setIsStreaming(true);
+                    setIsPending(false);
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const lines = decoder.decode(value).split("\n");
+
+                    for (const line of lines) {
+                        if (line.startsWith("data: ")) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.type === "chunk") {
+                                    assistantContent += data.data;
+                                    setTempAIMessage(assistantContent);
+                                    console.log("From server: " + data.data);
+                                } else if (data.type === "complete") {
+                                    setTimeout(() => { handleModifyIsLoadingChatMessage(true); }, 300);
+                                    setTimeout(async () => {
+                                        await Promise.all([
+                                            loadLatestAIMessageFromChat(currentChat.chatId, accessToken),
+                                            loadLatestHumanMessageFromChat(currentChat.chatId, accessToken).then(humanMessage =>
+                                                loadRetrievedDocumentsFromHumanMessageId(humanMessage, accessToken)
+                                            )
+                                        ]);
+                                    }, 500);
+
+                                    setTimeout(() => { handleModifyIsLoadingChatMessage(false); }, 1500);
+                                } else if (data.type === "error") {
+                                    handleChangeErrorMessageOnQuery(data.data);
+                                }
+                            } catch (parseError) {
+                                console.log("Error parsing data: ", parseError);
+                                handleChangeErrorMessageOnQuery("Error when handling your request, please try again");
+                            } finally {
+                                setIsStreaming(false);
+                                break;
+                            }
+                        }
+                    }
+                }
+
             } else {
                 console.log("Not authenticated");
                 router.push("/auth/login");
@@ -88,11 +135,11 @@ export default function Chat() {
             console.log(e);
             const message = (e instanceof Error ? e.message : "Error from server, please try again!") + ". Your last query will be deleted soon!!";
             handleChangeErrorMessageOnQuery(message);
-            // throw e;
         } finally {
+            setIsStreaming(false);
             setIsPending(false);
             setInputValue("");
-            setTimeout(() => setTempHumanMessageToNull(), 6000);
+            setTimeout(() => setTempHumanMessageToNull(), 500);
         }
     }
 
@@ -111,6 +158,10 @@ export default function Chat() {
         setTempHumanMessage(null);
     }
 
+    const setTempAIMessageToNull = (): void => {
+        setTempAIMessage(null);
+    }
+
     return (
         <div className="h-full w-full flex flex-col ">
             <div className="h-12">
@@ -124,10 +175,13 @@ export default function Chat() {
                 <ChatMessages
                     tempHumanMessage={tempHumanMessage}
                     setTempHumanMessageToNull={setTempHumanMessageToNull}
+                    tempAIMessage={tempAIMessage}
+                    setTempAIMessageToNull={setTempAIMessageToNull}
                     scrollToBottom={scrollToBottom}
                     scrollContainer={chatContainer}
                     isPending={isPending}
                     errorMessage={errorMessageOnQuery}
+                    isStreaming={isStreaming}
                 />
             </div>
             <div className="w-[100%] h-28 flex justify-center items-center ">

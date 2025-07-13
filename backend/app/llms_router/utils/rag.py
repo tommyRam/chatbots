@@ -21,6 +21,7 @@ import sqlalchemy.orm as orm
 from more_itertools import chunked
 
 from config import settings
+from models import AIMessagesModel
 from ..schemas import ChatMessageResponse, UserRequest
 from chat_router.services import add_ai_message_to_db, add_human_message_to_db, add_retrieved_documents_to_db
 
@@ -120,7 +121,9 @@ def get_vectorestore_from_namespace(
     vectorestore = PineconeVectorStore(index=index, embedding=embedding, namespace=namespace)
     return vectorestore
 
-def add_human_ai_messages_and_documents_to_db(response: ChatMessageResponse, request: UserRequest, algorithm: str, db: orm.Session):
+# Return the last message from the backend
+def add_human_ai_messages_and_documents_to_db(response: ChatMessageResponse, request: UserRequest, algorithm: str, db: orm.Session) -> AIMessagesModel:
     human_message_response = add_human_message_to_db(chat_id=request.chat_id, content=request.query, db=db)
-    add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
+    latest_ai_message = add_ai_message_to_db(chat_id=request.chat_id, content=response.chat_response, db=db)
     add_retrieved_documents_to_db(documents_from_vectorestore=response.documents, human_message_id=human_message_response.id, algorithm=algorithm, db=db)
+    return latest_ai_message

@@ -71,19 +71,21 @@ async def simple_rag_stream(
                 "data": "",
                 "done": True
             }
-            yield f"data: {json.dumps(completion_data)}\n\n"
-
-            response = ChatMessageResponse(documents=relevants_documents, chat_response=full_response)
+            
+            print(relevants_documents_formatted_schema)
+            print(type(relevants_documents_formatted_schema))
+            response = ChatMessageResponse(documents=relevants_documents_formatted_schema, chat_response=full_response)
             add_human_ai_messages_and_documents_to_db(
                 response=response,
                 request=request,
                 algorithm="Simple RAG",
                 db=db
             )
+            yield f"data: {json.dumps(completion_data)}\n\n"
         except Exception as e:
             error_data = {
                 "type": "error",
-                "data": f"An error from server",
+                "data": f"An error from server: {e}",
                 "done": True
             }
             yield f"data: {json.dumps(error_data)}\n\n"

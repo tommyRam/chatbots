@@ -6,6 +6,7 @@ import {
     getHumanMessageFromChat,
     getUserChatList,
     sendUserInput,
+    sendUserInputStream,
     getLatestAIMessageFromChat,
     getLatestHumanMessageFromChat,
     getRetrievedDocuments
@@ -27,6 +28,7 @@ interface ChatContextType {
     humanMessages: HumanMessageResponseSchema[];
     currentChat: ChatSchema | null;
     errorMessageOnQuery: string | null;
+    isLoadingChatsMessages: boolean;
     handleAddChat: (newChat: ChatSchema) => void;
     handleAddAllChat: (chats: ChatSchema[]) => void;
     handleAddAIMessage: (newAIMessage: AIMessageResponseSchema) => void;
@@ -39,7 +41,8 @@ interface ChatContextType {
     setCurrentChatToNull: () => void;
     removeCurrentChat: () => void;
     createChat: (formData: FormData, accessToken: string) => Promise<ChatSchema>,
-    sendMessage: (message: string, chatId: string, accessToken: string, enpoint?: string) => Promise<MessageResponse>;
+    sendMessage: (message: string, chatId: string, accessToken: string, endpoint?: string) => Promise<MessageResponse>;
+    // sendMessageStream: (message: string, chatId: string, accessToken: string, endpoint?: string);
     loadChats: (userId: string, accessToken: string) => Promise<ChatSchema[]>;
     loadAIMessagesFromChat: (chatId: string, accessToken: string) => Promise<AIMessageResponseSchema[]>;
     loadHumanMessagesFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema[]>;
@@ -47,6 +50,7 @@ interface ChatContextType {
     loadLatestHumanMessageFromChat: (chatId: string, accessToken: string) => Promise<HumanMessageResponseSchema>;
     handleClearErrorMessageOnQuery: () => void;
     handleChangeErrorMessageOnQuery: (message: string) => void;
+    handleModifyIsLoadingChatMessage: (newValue: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -59,6 +63,7 @@ export default function ChatProvider(
     const [humanMessages, setHumanMessages] = useState<HumanMessageResponseSchema[]>([]);
     const [errorMessageOnQuery, setErrorMessageOnQuery] = useState<string | null>(null);
     const [currentChat, setCurrentChat] = useState<ChatSchema | null>(null);
+    const [isLoadingChatsMessages, setIsLoadingChatsMessage] = useState<boolean>(true);
     const router = useRouter();
 
     useEffect(() => {
@@ -220,12 +225,17 @@ export default function ChatProvider(
         }
     }
 
+    const handleModifyIsLoadingChatMessage = (newValue: boolean): void => {
+        setIsLoadingChatsMessage(newValue);
+    }
+
     const value = {
         chats,
         aiMessages,
         humanMessages,
         currentChat,
         errorMessageOnQuery,
+        isLoadingChatsMessages,
         handleAddAllChat,
         handleAddChat,
         handleAddAIMessage,
@@ -245,7 +255,8 @@ export default function ChatProvider(
         loadLatestAIMessageFromChat,
         loadLatestHumanMessageFromChat,
         handleClearErrorMessageOnQuery,
-        handleChangeErrorMessageOnQuery
+        handleChangeErrorMessageOnQuery,
+        handleModifyIsLoadingChatMessage
     }
 
     return (

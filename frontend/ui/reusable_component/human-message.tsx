@@ -21,7 +21,7 @@ export default function HumanMessage({ humanMessage, handleClickHumanMessage }: 
                             </div>
                         </div>
                     </div>
-                    <div className={`flex justify-center items-center border-white border-2 rounded-4xl  bg-purple-800 text-white w-8 h-8`}>
+                    <div className={`w-8 h-8 flex-shrink-0 flex justify-center items-center border-white border-2 rounded-4xl  bg-purple-800 text-white `}>
                         {"john".charAt(0).toUpperCase()}
                     </div>
                 </div>
